@@ -1,0 +1,75 @@
+\subsection{Results} \label{sec:res}
+
+Figure~\ref{fig:res} gives the benchmark results.  In general, we are
+outperformed by GHC, sometimes significantly, and generally outperform UHC. We
+spend the rest of the section analyzing these performance differences.
+
+Even with optimizations as an option turned off (\texttt{-O0}), there are still
+a significant number of optimizations that are used by GHC and/or UHC that
+aren't available to the $\mathcal{CE}$ machine. For example:
+
+\begin{itemize}
+\item Register allocation
+\item Known applications
+\item Explicit recursion
+\item Global functions
+\item Strictness analysis
+\item Literal unboxing
+\end{itemize}
+
+\begin{figure*}
+\centering
+\begin{tabular}{l | l | l | l | l | l}
+& $\mathcal{CE}$ & GHC -O0 & UHC -O0 & GHC -O3 & UHC -O3 \\
+\hline
+\texttt{exp3\_8} & 9.796 & .506 & 4.838 & .486 & 3.268 \\
+\texttt{primes 1500} & .566 & .354 & 1.812 & .234 & 1.778 \\
+\texttt{queens 9} & .436 & .092 & .698 & .016 & .682 \\
+\texttt{fib 35} & 1.380 & 1.228 & 15.440 & .114 & 11.858 \\
+\texttt{digits-of-e1 1000} & 3.416 & 1.850 & 28.640 & .168 & 28.194 \\
+\texttt{digits-of-e2 1000} & .840 & .692 & 4.354 & .286 & 4.172 \\
+\texttt{fannkuch 8} & .942 & .232 & 2.744 & .168 & 2.702 \\
+\texttt{tak 14 7 0} & .276 & .060 & .336 & .014 & .292\\
+\texttt{expexp 8} & 1.786 & 1.824 & 5.906 & 1.824 & 5.976 
+\end{tabular}
+\caption{Benchmark Results. Measurement is wall clock time, all units are
+seconds. Times averaged over 5 runs}
+\label{fig:res}
+\end{figure*}
+
+We expect that with the addition of these optimizations, the $\mathcal{CE}$
+machine will become significantly more competitive. We discuss how some of these
+optimizations can be applied to the $\mathcal{CE}$ machine in
+Section~\ref{sec:disc}.
+
+We look more closely at two of the benchmarks: \texttt{exp3\_8}, where we perform
+quite poorly, and \texttt{expexp}, where we perform reasonably well. For
+\texttt{exp3\_8}, the poor performance is due to the following factors: 
+
+\begin{itemize}
+\item \textbf{Y combinator:} \texttt{exp3\_8} is largely a benchmark of recursion.
+Because recursion is implemented with a Y combinator, we perform poorly. This
+should be alleviated with CFA~\cite{rozas1992taming}. 
+\item \textbf{Data constructors:} Because we implement data constructors with
+pure lambda terms, we suffer compared to implementations that have data
+constructors and case statements. We expect that CFA combined with known
+application analysis should significantly lessen this gap.
+\item \textbf{Inefficient conditional:} Our machine booleans, e.g. integer
+inequality, are implemented as a church boolean. A CFA will fix this performance
+issue.
+\end{itemize}
+
+The \texttt{expexp} program is one in which we are more competitive for the following reasons:
+\begin{itemize}
+\item \textbf{Partial application:} While most of the church operators are
+supercombinators, the application of them creates significant amounts of partial
+applications. For existing machines this causes expensive closures, but for the
+$\mathcal{CE}$ machine, these closures are cheap to create.  
+\item \textbf{Pure lambda term:} Many of the optimizations listed above that
+are such an advantage on most programs lose their advantage here. For example,
+strictness analysis and global function knowledge do little for this kind of
+program. There is no recursion and no data types, removing that advantage as
+well. 
+\end{itemize}
+
+

@@ -1,0 +1,141 @@
+\section{Discussion} \label{sec:disc}
+
+While we have presented some of the related work throughout the paper, we use
+this section to further address related work. We also discuss a number of
+possibilities for future work, motivated by current drawbacks and inspired by
+related work. 
+
+\subsection{Closure Representation}
+
+Appel and Shao \cite{shao1994space} and Appel and Jim \cite{appel1988optimizing}
+both cover the design space for closure representation, and develop a particular
+approach, called \emph{safely linked closures}. Their approach uses flat
+closures when there is no duplication, and link in a way that preserves
+liveness, to prevent violation of the \emph{safe for space complexity} (SSC)
+rule \cite{appel2006compiling}.
+
+Unfortunately, the technique from Appel and Shao is not directly applicable to
+call by need languages, like those used in this paper. To see why, consider the
+following example taken from Section 2 of their paper
+\cite{appel1988optimizing}:
+\begin{verbatim}
+fun f(h, u, v, w) = 
+  let fun g() = 
+    let x = h(u ,v)
+        y = h(x, v)
+        z = h(y, w)
+     in z
+    end
+   in g
+  end
+\end{verbatim}
+The point made by the authors is that for a call by value language, the compiler
+can and should free the variable \texttt{u} after the first call to \texttt{h};
+it is no longer live. In a call by need variant of this program, however, we
+cannot know if \texttt{u} will be needed until either it is forced after
+\texttt{x,y} and \texttt{z} are all forced, or it becomes unreachable. In other
+words, we cannot say in general when \texttt{u} will be unreachable, and so we
+cannot apply the technique as described in the paper.
+
+In the future we should be able to apply some of the basic ideas as described in
+Appel and Jim \cite{appel1988optimizing}. In particular, we aim to flatten the
+cactus structure when possible. If we can either prove that a particular segment
+of the cactus structure will not branch, or provide a transformation to
+encourage such environments, then we can flatten certain parts of the cactus
+environment, reducing space usage and variable lookup time. Many of the
+underlying ideas of the \emph{safely linked closures} \cite{shao1994space}
+should be applicable here. We propose such investigation for future work.
+
+Another point is space safety for the current machine. As pointed out by Appel
+and Shao, the naive linked representation is not really safe for space at all;
+many variables that should be freed are kept live because they reside in the linked
+environment of a particular closure, despite not being free variables of said
+closure. As a simple partial fix, we use the standard procedure of compiling an
+info table for each closure code pointer, allowing the garbage collector to mark
+each closure in the cactus environment as live or not live according to the free
+variables of closures, not just reachability on the cactus stack. Then, while
+the environment cell itself cannot be freed, the closure in the cell can,
+preventing a real space leak and incurring only a small constant space cost.
+
+Consider also the application of Appel et al.'s ideas regarding hybrid
+flat-shared environments. While the cactus stack structure is at least partially
+linked, there \emph{can} be flat sections. We would need to ensure that flat
+sections (e.g.\ functions with arity $> 1$) were detected correctly, and the
+ENTER rule was extended to handle it correctly, but it should be possible. The
+hybrid approach would allow proper sharing with simple offsets when possible,
+improving performance for variable lookup. We consider this a promising area for
+future work.
+
+\subsection{Eval/Apply vs. Push/Enter}
+
+Marlow and Peyton Jones' paper describes two approaches to the implementation of
+function application: eval/apply, where the function is evaluated and then
+passed the necessary arguments, and push/enter, where the arguments are pushed
+onto the stack and the function code is entered \cite{marlow2004making}.
+
+They conclude that despite push/enter being a standard approach to lazy
+machines, eval/apply performs better. Therefore, our choice of a push/enter
+model requires some justification.  As a first point, the current implementation
+has no fixed arity functions: each function is of arity one; functions with
+multiple arguments are represented as curried functions of one argument.  This
+property makes some of the arguments made by Marlow and Peyton Jones not apply
+to our machine. We address a few remaining points from their ``advantages of
+eval/apply'' list ~\cite{marlow2004making}:
+
+\begin{itemize}
+\item \emph{Eval/apply easier to map to a portable assembly language, such as C or
+C{-}-.} We concede this is likely the case for existing portable assembly
+languages, but note that our implementation is straightforward, with apply
+consisting of only two assembly instructions.
+\item \emph{No need to distinguish return addresses from heap pointers.} Because
+of our standard sized closures, our implementation of push/enter does not suffer
+this issue.
+\item \emph{No tagging for non-pointers.} We do not use tagging, and so are not
+affected by this arguments.
+\item \emph{No need for the \texttt{Su} pointer}. This is a fundamental
+difference in approach; our implementation \emph{only} needs the \texttt{Su}
+pointer (the pointer into the cactus stack). 
+\item \emph{Arity matching burden on caller makes \texttt{foreign} calls more
+straight forward.} The wrapper required for foreign calls in our push/enter
+approach is trivial.
+\item \emph{Unknown functions called with number of arguments matching arity can
+have arguments passed in registers.} We discuss this issue in
+Section~\ref{sec:alloc}.  
+\end{itemize}
+
+\subsection{Collapsed Markers}
+Friedman et al.\ show how a machine can be designed to prevent multiple adjacent
+update markers being pushed onto the stack \cite{lkm}.  This property is
+desirable because multiple adjacent update markers will all be updated with the
+same value. Furthermore, they give examples showing that in some cases, these
+redundant update markers can cause an otherwise constant-spaced stack to grow
+unbounded. To achieve what they call collapsed markers, they add a layer
+of indirection between heap locations and closures. We propose a similar
+approach, but without the performance hit induced by an extra layer of
+indirection: upon a variable dereference, check if the top of the stack is an
+update. If it is, instead of pushing a redundant update marker onto the stack,
+replace the closure in the heap at the desired location with an update marker.
+Then, the variable dereference rule must have a check for an update marker upon
+dereference, and will update accordingly. We have begun to implement this
+optimization, but leave the full implementation and description for future work.
+
+\subsection{Register Allocation} \label{sec:alloc}
+One advantage of flat environments is that register allocation is
+straightforward \cite{appel2006compiling, jonesstg, terei2010llvm}. It is less
+obvious on how to approach register allocation with the $\mathcal{CE}$ machine.
+This remains an area for future work. However, we argue that \emph{only strict
+free variables should be loaded into registers}. That is to say, the environment
+variables may not be used, and only the ones we are sure will be used should be
+loaded into registers. The rest should be loaded on demand. Whether or not this
+is the case should make for interesting future work.
+
+\subsection{Historical Note}
+Given that lazy evaluation is three or four decades old, and shared environments
+about five, it might seem surprising that the connection between the two made in
+this paper was not discovered earlier. We speculate that lazy evaluation via
+graph reduction of supercombinators was so successful that the field firmly
+committed to that approach. For good reason, too: GHC is a very high
+performance compiler, sometimes achieving higher performance than
+implementations in lower level languages, such as C \cite{mainland2013exploiting}. 
+
+

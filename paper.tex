@@ -1,0 +1,88 @@
+\documentclass[preprint]{sigplanconf}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usetikzlibrary{chains,fit,shapes,calc}
+\usepackage{verbatim}
+\usepackage{semantic}
+\usepackage{tabu}
+\usepackage{amsthm}
+\usepackage{mathptmx}
+\usepackage{todonotes}
+\newcommand{\concat}{\ensuremath{+\!\!\!\!+\,}}  
+
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{defin}{Definition}
+
+\begin{document}
+
+\conferenceinfo{ICFP '14}{September 1-3, 2014, Gothenburg, Sweden} 
+\copyrightyear{2014} 
+\copyrightdata{[to be supplied]} 
+
+\titlebanner{Preprint}        % These are ignored unless
+\preprintfooter{Cactus Environment Machine}   % 'preprint' option specified.
+
+\title{Cactus Environment Machine}
+\subtitle{Shared Environment Call by Need}
+
+\authorinfo{George Stelle}
+           {University of New Mexico}
+           {stelleg@cs.unm.edu}
+\authorinfo{Darko Stefanovic}
+           {University of New Mexico}
+           {darko@cs.unm.edu}
+\authorinfo{Stephen L. Olivier}
+           {Sandia National Laboratories}
+           {slolivi@sandia.gov}
+\authorinfo{Stephanie Forrest}
+           {University of New Mexico}
+           {forrest@cs.unm.edu}
+
+\maketitle
+
+\begin{abstract}
+Existing machines for lazy evaluation use a \emph{flat} representation of
+environments, storing the terms associated with free variables in an array.
+Combined with a heap, this structure supports the shared intermediate
+results required by lazy evaluation.  This paper proposes and describes an
+alternative approach that uses a \emph{shared} environment to implement lazy
+evaluation.  We show how a shared environment can act as both an environment and
+a mechanism for sharing results. To formalize this approach, we describe a novel
+calculus that makes the shared environment explicit, as well as a machine to
+implement the calculus: the \emph{Cactus Environment Machine} ($\mathcal{CE}$
+machine). A simple compiler implements the machine and is used to run
+experiments for assessing performance.  The results show reasonable performance
+and suggest that with the addition of some common optimizations, the
+$\mathcal{CE}$ machine could be competitive with existing high performance lazy
+evaluation implementations.
+%In addition, we implement a simple compiler that targets native
+%code and show that it has reasonable performance despite some significant
+%but addressable shortcomings.
+\end{abstract}
+
+\input{intro}
+\input{background}
+\input{env}
+\input{calc}
+\input{mach}
+\input{implement}
+\input{evaluation}
+\input{results}
+\input{discussion}
+\input{conclusion}
+
+\section{Acknowledgments}
+Sandia is a multiprogram laboratory operated by Sandia Corporation, a Lockheed Martin Company, for the United States Department of Energy’s National Nuclear Security Administration under contract DE-AC04-94AL85000.
+
+% We recommend abbrvnat bibliography style.
+\bibliographystyle{abbrvnat}
+\bibliography{annotated}
+
+\input{appendix}
+\end{document}
