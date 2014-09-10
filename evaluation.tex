@@ -12,7 +12,7 @@ given in Figure~\ref{fig:bench}.
 
 \begin{figure}
 \begin{itemize}
-\item \textbf{exp3\_8:} A peano arithmetic benchmark. It computes $3^8$ in
+\item \textbf{exp3:} A peano arithmetic benchmark. It computes $3^8$ in
 peano arithmetic, and prints the result. 
 \item \textbf{queens:} Computes the number of solutions to the nqueens problem
 for an n by n board.
@@ -42,8 +42,9 @@ based on the STG machine \cite{jonesstg}.
 GRIN machine \cite{boquist1997grin, dijkstra2009architecture}.
 \end{itemize}
 
-We use GHC version 7.6.3 and UHC version 1.1.5. We compile with both -O0 and
+We use GHC version 7.8.3 and UHC version 1.1.5. We compile with both -O0 and
 -O3, and show the results for both. For GHC, we use the -H flag from the runtime
 system options to set the default heap size to the same value as the
-$\mathcal{CE}$ machine (400M). The tests were run on an AMD Athlon II X4 640 3.0
-GHZ desktop, running Linux version 3.13. 
+$\mathcal{CE}$ machine (1G) to avoid the measuring the performance of GC
+implementations. The tests were run on an Intel(R) Xeon(R) CPU E5-4650L @
+2.60GHz, running Linux version 3.16. 
