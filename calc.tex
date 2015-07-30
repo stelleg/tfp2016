@@ -122,7 +122,7 @@ overwritten with a value is shared between instances of that variable.
 \textbf{Call by Name Semantics}
 \begin{align*}
 \tag{MEval} \inference
-{(t[l], \mu) \xrightarrow{* }_{M} (\lambda t_2[l'], \mu') \quad f \not \in \textnormal{dom}(\mu')}
+{(t[l], \mu) \rightarrow_{M} (\lambda t_2[l'], \mu') \quad f \not \in \textnormal{dom}(\mu')}
 {(t \; t_3[l], \mu) \rightarrow_{M} (t_2[f], \mu'[f \mapsto t_3[l] \cdot l'])}  
 \end{align*}
 \begin{align*}
@@ -158,8 +158,11 @@ overwritten with a value is shared between instances of that variable.
 \subsection{Correctness}
 
 We use this section to show correctness with respect to Ariola et. al's call by
-need lambda calculus \cite{ariola1995call}. In particular, we show correctness
-with respect to their natural semantics (their Figure 8). 
+need lambda calculus \cite{ariola1995call}. In particular, we show that there is
+a bisimulation between $\rightarrow_{N}$ and their operational semantics
+(Figure~\ref{fig:cbn}). We omit some details for brevity, but these can be found
+in the Coq implementation at \texttt{http://cs.unm.edu/\textasciitilde
+stelleg/cem-icfp2014.tar.gz}.
 
 \begin{figure}
 \begin{align*}
@@ -181,34 +184,18 @@ x.t_n \\ \langle \Psi, x' \mapsto t_m \rangle [x'/x]t_n \Downarrow \langle
 {\langle \Phi \rangle t_l \; t_m \Downarrow \langle \Upsilon \rangle \lambda y.t'}
 \end{align*}
 \caption{Ariola et. al's Operational Semantics}
-\label{fig:calccact}
+\label{fig:cbn}
 \end{figure}
 
-To start, case-wise induction on $\rightarrow_{N}$ gives us an ordering to the
-closures in the cactus environment. This is similar to the ordering from Lemma
-8.1 of \cite{ariola1995call}.
-
-{\lemma $\forall_{l \mapsto t[l_1] \cdot l_2 \in \mu} l_1 < l \wedge l_2 < l$}
-\vspace{2mm}
-
-With this ordering, we can define a $flatten$ function that takes any $(c, \mu)$
-and flattens it accordingly. It does so by mapping any $(c, \mu)$ to a $\langle
-\Phi \rangle t$, with the necessary variable hygiene. With this function, along
-with structural induction on term size, we get the following correctness
-property:
-
-{\prop \textnormal{(Correctness)} $(c, \mu) \xrightarrow{* }_{M} (v, \mu') \iff$
-$$flatten(c,\mu) \Downarrow flatten(v, \mu') $$}
-
-It is worth noting the similarity between these semantics for pedagogical
-purposes. Ariola et. al's semantics throws out environmental structure because
-it doesn't need to keep it. Indeed, keeping the structure would make
-correspondence to their syntactic account more difficult. This is apparent in
-how the abstract machines implementing the semantics (e.g.
-\cite{garcia2009lazy}) are forced to do variable search in the environment:
-deBruijn indices are not an option. Our machine, by retaining that structure in
-the cactus environment, allows for use of deBruijn indices, and, as we will see
-in Section~\ref{sec:impl}, straighforward low-level implementation.
+{\prop \textnormal{(Bisimilarity)} $\xrightarrow{}_{M} \; \sim \; \Downarrow$.}
+We start with a straightforward relation between standard lambda terms and
+their deBruijn indexed counterparts, which is only defined for closed
+expressions. We then define the base case for the bisimilarity relation,
+containing the equivalent lambda terms, in the empty heap, and the empty
+environment for the cactus calculus. The relation is then defined inductively
+by single stepping each step relation. The proof of bisimilarity then proceeds
+by induction on each step relation, carefully preserving the bijection of heap
+addresses.
 
 \subsection{Recursion}
 

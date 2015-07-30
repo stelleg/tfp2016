@@ -64,9 +64,7 @@ variable will point to this location, and thus the bound term will only be
 evaluated at most once. The App rule simply pushes an argument term in the
 current environment. The Var1 rule enters the closure pointed to by the
 environment location, while the Var2 rule traverses the cactus environment to
-locate the correct closure. The correspondence with the calculus semantics from
-the previous section is as follows: The NVar rule is implemented with Var and
-Update, and the NEval rule is implemented with Lam and App. 
+locate the correct closure.  
 
 To get some intuition for the $\mathcal{CE}$ machine and how it works, consider
 the depiction in Figure~\ref{fig:state} of its state during evaluation of the
@@ -89,3 +87,11 @@ $f$ is left out to save space.
 \label{fig:state}
 \end{figure}
 
+\subsection{Correctness}
+We prove that the reflexive transitive closure of the $\mathcal{CE}$ machine
+step relation evaluates to a value and heap and empty context iff
+$\xrightarrow{}_{M}$ evaluates to the same value and heap.
+
+{\prop \textnormal{(Correctness)} $$(c, \mu) \rightarrow_{M} (v, \mu') \;
+\leftrightarrow \; \langle c, \square, \mu \rangle \xrightarrow{*
+}_{\mathcal{CE}} \langle v, \square, \mu' \rangle $$} We begin by. 
