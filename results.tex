@@ -4,88 +4,109 @@ Figure~\ref{fig:res} gives the benchmark results.  In general, we are
 outperformed by GHC, sometimes significantly, and generally outperform UHC. We
 spend the rest of the section analyzing these performance differences.
 
-Even with optimizations as an option turned off (\texttt{-O0}), there are still
-a significant number of optimizations that are used by GHC and/or UHC that
-aren't available to the $\mathcal{CE}$ machine. For example:
-
-\begin{itemize}
-\item Register allocation
-\item Known applications
-\item Explicit recursion
-\item Global functions
-\item Strictness analysis
-\item Liveness analysis
-\item Literal unboxing
-\end{itemize}
-
 \begin{figure*}
 \centering
-\begin{tabular}{l | l | l | l | l | l}
+\begin{tabularx}{\textwidth}{l | X | X | X | X | X}
 & $\mathcal{CE}$ & GHC -O0 & UHC -O0 & GHC -O3 & UHC -O3 \\
 \hline
-<<<<<<< HEAD
 \texttt{exp3 8} & 1.530 & 1.176 & 3.318 & 1.038 & 2.286 \\
 \texttt{tak 16 8 0} & .366 & .146 & 1.510 & .006 & 1.416 \\
 \texttt{primes 1500} & .256 & .272 & 1.518 & .230 & 1.532 \\
 \texttt{queens 9} & .206 & .050 & .600 & .012 & .598 \\
 \texttt{fib 35} & 2.234 & .872 & 10.000 & .110 & 8.342 \\
-\texttt{expexp 8} & .598 & 3.766 & 4.302 & 3.988 & 3.980 \\
 \texttt{digits-of-e1 1000} & 3.576 & 1.274 & 21.938 & .118 & 22.010 \\
 \texttt{digits-of-e2 1000} & .404 & .792 & 3.430 & .372 & 3.278 \\
 \texttt{fannkuch 8} & .560 & .084 & 2.184 & .048 & 2.196 \\
-\end{tabular}
-\caption{Benchmark Results. Measurement is wall clock time, all units are
-seconds. Times averaged over 5 runs}
+\end{tabularx}
+\caption{Machine Literals Benchmark Results. Measurement is wall clock time,
+units are seconds. Times averaged over 5 runs}
 \label{fig:res}
 \end{figure*}
 
-We expect that with the addition of these optimizations, the $\mathcal{CE}$
-machine will become significantly more competitive. We discuss how some of these
-optimizations can be applied to the $\mathcal{CE}$ machine in
-Section~\ref{sec:disc}.
-
-We look more closely at two of the benchmarks: \texttt{tak}, where we perform
-quite poorly compared to optimized GHC, and \texttt{expexp}, where we perform
-quite well. For \texttt{tak}, the poor performance is due to the
-following factors: 
+There are many optimizations built in to the abstract machine underlying GHC,
+but three in particular are the cause of much of the performance disparity: 
 
 \begin{itemize}
-\item \textbf{Y combinator:} \texttt{tak} is largely a benchmark of recursion.
-Because recursion is implemented with a Y combinator, we perform poorly. This
-should be alleviated with CFA-based techniques, similar to those used in ~\cite{rozas1992taming}. 
-\item \textbf{Register allocation:} This is also a case where a proper register
-allocator really helps. By passing the arguments of the \texttt{tak} function in
-registers, GHC avoids a lot of heap thrashing.
+\item \textbf{Register allocation:} The $\mathcal{CE}$ machine has no register
+allocator. In contrast, by passing arguments to functions in registers, GHC
+avoids a lot of heap thrashing.
+\item \textbf{Unpacked Literals:} Related to register allocation, this allows
+GHC to keep machine literals without tags in registers for tight loops. In
+contrast, the $\mathcal{CE}$ machine operates entirely on the stack, and has a
+code pointer associated with every machine literal. 
+\item \textbf{Y combinator:} For example, \texttt{tak} is largely a benchmark of
+recursion.  Because recursion in the $\mathcal{CE}$ machine is implemented with
+a Y combinator, we perform poorly. This should be alleviated with CFA-based
+techniques, similar to those used in ~\cite{rozas1992taming}. 
 \end{itemize}
 
-The \texttt{expexp} program is one in which we are more competitive for the following reasons:
-\begin{itemize}
-\item \textbf{Partial application:} While most of the church operators are
-supercombinators, the application of them creates significant amounts of partial
-applications. For existing machines this causes expensive closures, but for the
-$\mathcal{CE}$ machine, these closures are cheap to create.  
-\item \textbf{Pure lambda term:} Many of the optimizations listed above that
-are such an advantage on most programs lose their advantage here. For example,
-strictness analysis and global function knowledge do little for this kind of
-program. There is no recursion and no data types, removing that advantage as
-well. 
+Register allocation is the primary drawback of the $\mathcal{CE}$ machine.
+Unlike the STG machine, which pulls the free variables into registers,
+allowing tight loops with everything kept in registers, it's much less clear how
+to effectively do register allocation in a fully shared environment setting.
+Of course, we'd like to avoid traversing the shared environment more than
+absolutely necessary. On this flip side, just as with constructing the delayed
+computation, the \emph{loading} the computation is made lazier in a sense. That
+is, we don't load values into registers until they are forced. Of course, this
+can lead to memory thrashing. This trade-off between lazy register loading and 
+memory thrashing is an interesting area for future work.
 
-\end{itemize}
+We attempt to isolate the effect of register allocation and unpacked machine
+literals by replacing the use of machine integers with church numerals for a
+compatible subset of the evaluation programs. See Figure~\label{fig:res-church}
+for performance with this modification. Comparative performance is much
+improved, with the $\mathcal{CE}$ machine occasionally even outperforming
+optimized GHC.
+
+\begin{figure*}
+\centering
+\begin{tabularx}{\textwidth}{l | X | X | X | X | X}
+& $\mathcal{CE}$ & GHC -O0 & UHC -O0 & GHC -O3 & UHC -O3 \\
+\hline
+\texttt{tak 14 7 0} & 1.610 & 2.428 & 7.936 & 1.016 & 7.782 \\
+\texttt{primes 32} & .846 & 1.494 & 4.778 & .666 & 5.290 \\
+\texttt{queens 8} & .242 & .374 & 1.510 & .154 & 1.508 \\
+\texttt{fib 23} & .626 & .940 & 5.026 & .468 & 5.336 \\
+\texttt{digits-of-e2 6} & .138 & 1.478 & 5.056 & .670 & 5.534 \\
+\texttt{fannkuch 7} & .142 & .124 & .796 & .040 & .808 \\
+\end{tabularx}
+\caption{Church Numeral Benchmark Results. Measurement is wall clock time, 
+units are seconds. Times averaged over 5 runs}
+\label{fig:res-church}
+\end{figure*}
+
+We can go even further, and remove the disparity due to the Y-combinator, by
+running a simple example with church numerals. To do so we use a simple church
+numeral exponentiation, calculating $3^8 - 3^8$. We see that in this case, we
+significantly outperform both GHC and UHC.
+
+\begin{figure*}
+\begin{tabularx}{\textwidth}{l | X | X | X | X | X}
+& $\mathcal{CE}$ & GHC -O0 & UHC -O0 & GHC -O3 & UHC -O3 \\
+\hline
+\texttt{pow 3 8} & .598 & 3.766 & 4.302 & 3.988 & 3.980 \\
+\end{tabularx}
+\caption{Church Numeral Exponentiation Benchmark Results. Measurement is wall clock time, 
+units are seconds. Times averaged over 5 runs}
+\label{fig:res-church}
+\end{figure*}
+
+We expect that with the addition of the optimizations mentioned above, as well
+as others, the $\mathcal{CE}$ machine will become significantly more
+competitive. We discuss how some of these optimizations can be applied to the
+$\mathcal{CE}$ machine in Section~\ref{sec:disc}.
 
 \subsection{The Cost of the Cactus}
 
-One big question, is what is the cost of the variable lookup. Recall that
-variable lookup is linear in the index of the variable, following pointers until
-the index is zero.
-
-The answer, as one might guess, is that linear variable lookup cost is very
-lage. Without any optimizations. For example, on the queens benchmark, variable
-lookup took roughly $80-90\%$ of the runtime, as measured by profiling. Much
-of that cost was for lookups of supercombinators, however, so for the benchmarks
-above we added the inlining mentioned in the previous section. Still, even with
-this simple optimization, variable lookup still takes roughly $50\%$ of the
-runtime. There is some variation across benchmarks, but this is a rough
-approximation for the average cost. We discuss how this cost could be addressed
-in future work in Section~\ref{sec:disc}.
+Recall that variable lookup is linear in the index of the variable, following
+pointers until the index is zero. As one might guess, is that linear variable
+lookup cost is very large. Without any optimizations. For example, on the queens
+benchmark, variable lookup took roughly $80-90\%$ of the runtime, as measured by
+profiling. Much of that cost was for lookups of supercombinators, however, so
+for the benchmarks above we added the inlining mentioned in the previous
+section. Still, even with this simple optimization, variable lookup still
+takes roughly $50\%$ of the runtime. There is some variation across
+benchmarks, but this is a rough approximation for the average cost. We discuss
+how this cost could be addressed in future work in Section~\ref{sec:disc}.
 
 

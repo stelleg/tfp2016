@@ -1,19 +1,19 @@
 \section{Cactus Environment Calculus} \label{sec:calc}
 
 This section shows how the shared environment approach can be applied to
-call by need evaluation. We start with a calculus with environments that can be
+call-by-need evaluation. We start with a calculus with environments that can be
 represented in either a shared or flat manner: Curien's calculus of closures,
-and show how it can be modified to force sharing. See Curien's call by name
+and show how it can be modified to force sharing. See Curien's call-by-name
 calculus of closures in Figure~\ref{fig:calcclos}\footnote{Curien calls it a
 ``lazy'' evaluator, and there is some ambiguity with the term lazy, but we use the
-term only to mean call by need. We also remove the condition checking that $i <
+term only to mean call-by-need. We also remove the condition checking that $i <
 m$ because we are only concerned with the evaluation of closed terms.}.
 
 The LEval rule pushes a closure onto the environment, and the LVar rule indexes
 into the environment, entering the corresponding closure. We show in this
 section that by removing ambiguity about how the environments are represented,
 and forcing them to be represented in a \emph{cactus stack}, we can define our
-novel call by need calculus.
+novel call-by-need calculus.
 
 \begin{figure}
 \textbf{Syntax}
@@ -37,7 +37,7 @@ novel call by need calculus.
 {i > 0}
 {i[c \cdot \rho] \rightarrow_L (i-1)[\rho]}
 \end{align*}
-\caption{Curien's call by name calculus of closures}
+\caption{Curien's call-by-name calculus of closures}
 \label{fig:calcclos}
 \end{figure}
 
@@ -55,7 +55,7 @@ following environments, respectively:
 
 Again, the second closure in each environment is the same closure.  And again,
 we can represent these environments with a shared environment, this time,
-keeping call by need evaluation in mind:
+keeping call-by-need evaluation in mind:
 \begin{center}
 \begin{tikzpicture}[ 
   edge from parent path={(\tikzchildnode\tikzchildanchor) edge [-latex] (\tikzparentnode\tikzparentanchor)},
@@ -72,17 +72,17 @@ keeping call by need evaluation in mind:
 \end{center}
 This inverted tree structure seen earlier with the leaves pointing toward the
 root is called a \emph{cactus stack} (sometimes called a spaghetti stack or
-saguaro stack) \cite{hauck1968burroughs,ichbiah1979rationale}. In this
+saguaro stack) \cite{hauck1968burroughs,ichbiah1991rationale}. In this
 particular cactus stack, every node defines an environment as the sequence of
 closures in the path to the root.  If $t_2[\bullet]$ is a thunk, and is updated
 in place with the value after its first reference, then both environments would
 contain the resulting value. This is exactly the kind of sharing that is
-required by call by need, and thus we can use this structure to build a call by
-need evaluator. This is the essence of the idea behind the cactus environment
-calculus and the cactus environment ($\mathcal{CE}$) machine. Our important
-insight here is that Curien's calculus of closures does not differentiate
-between flat and shared environment representations, and indeed, no calculus
-that we are aware of has had the need to.
+required by call-by-need, and thus we can use this structure to build a
+call-by-need evaluator. This is the essence of the idea behind the cactus
+environment calculus and the cactus environment ($\mathcal{CE}$) machine. Our
+important insight here is that Curien's calculus of closures does not
+differentiate between flat and shared environment representations, and indeed,
+no calculus that we are aware of has had the need to.
 
 Therefore, we must derive our own calculus of closures, forcing the environment
 to be shared. Because we can hold the closure directly in the environment, we
@@ -95,15 +95,15 @@ See Figure~\ref{fig:calccact} for the syntax and semantics of the cactus
 calculus. Recall that we are only concerned with evaluation of closed terms. The
 initial closed term $t$ is placed in a $(t[0],\epsilon[0=\bullet])$ tuple, and
 evaluation terminates on a value. We define two different semantics, one for
-call by name and one for call by need. This is to make the connection to
-Curien's call by name calculus more straightfoward, both for the reader and
+call-by-name and one for call-by-need. This is to make the connection to
+Curien's call-by-name calculus more straightfoward, both for the reader and
 for the proof. The rule for application (MEval and NEval) is identical for
 both semantics: each evaluates the left hand side to a function, then binds
 the variable in the cactus environment, extending the current environment.
 The only difference between this semantics and Curien's is that if we need
 to extend an environment multiple times, the semantics \emph{require}
 that we share said environment among the extensions. This makes no real
-difference for call by name, but it is needed for the sharing of results in the
+difference for call-by-name, but it is needed for the sharing of results in the
 NVar1 rule. The explicit environment sharing ensures that the closure that is
 overwritten with a value is shared between instances of that variable. 
 
@@ -119,7 +119,7 @@ overwritten with a value is shared between instances of that variable.
 \tag{Location} l,f &\in \mathbb{N}  \\
 \tag{State} s &::= (c, \mu)
 \end{align*}
-\textbf{Call by Name Semantics}
+\textbf{Call-by-Name Semantics}
 \begin{align*}
 \tag{MEval} \inference
 {(t[l], \mu) \rightarrow_{M} (\lambda t_2[l'], \mu') \quad f \not \in \textnormal{dom}(\mu')}
@@ -135,7 +135,7 @@ overwritten with a value is shared between instances of that variable.
 {i > 0 \quad \mu(l) = c \cdot l'}
 {(i[l],\mu) \rightarrow_M ((i-1)[l'],\mu)}
 \end{align*}
-\textbf{Call by Need Semantics}
+\textbf{Call-by-Need Semantics}
 \begin{align*}
 \tag{NEval} \inference
 {(t[l], \mu) \xrightarrow{* }_{N} (\lambda t_2[l'], \mu') \quad f \not \in \textnormal{dom}(\mu')}
@@ -157,12 +157,10 @@ overwritten with a value is shared between instances of that variable.
 
 \subsection{Correctness}
 
-We use this section to show correctness with respect to Ariola et. al's call by
-need lambda calculus \cite{ariola1995call}. In particular, we show that there is
-a bisimulation between $\rightarrow_{N}$ and their operational semantics
-(Figure~\ref{fig:cbn}). We omit some details for brevity, but these can be found
-in the Coq implementation at \texttt{http://cs.unm.edu/\textasciitilde
-stelleg/cem-ifl2015.tar.gz}.
+We use this section to show correctness with respect to Ariola et. al's
+call-by-need lambda calculus \cite{ariola1995call}. In particular, we show that
+there is a strong bisimulation between $\rightarrow_{N}$ and their operational
+semantics (Figure~\ref{fig:cbn}). 
 
 \begin{figure}
 \begin{align*}
@@ -187,15 +185,17 @@ x.t_n \\ \langle \Psi, x' \mapsto t_m \rangle [x'/x]t_n \Downarrow \langle
 \label{fig:cbn}
 \end{figure}
 
-{\prop \textnormal{(Bisimilarity)} $\xrightarrow{}_{M} \; \sim \; \Downarrow$.}
-We start with a straightforward relation between standard lambda terms and
-their deBruijn indexed counterparts, which is only defined for closed
-expressions. We then define the base case for the bisimilarity relation,
-containing the equivalent lambda terms, in the empty heap, and the empty
-environment for the cactus calculus. The relation is then defined inductively
-by single stepping each step relation. The proof of bisimilarity then proceeds
-by induction on each step relation, carefully preserving the bijection of heap
-addresses.
+{\theorem \textnormal{(Strong Bisimulation)} $\xrightarrow{}_{N} \; \sim \; \Downarrow$.}
+We start with a \emph{flattening} relation between a configuration for
+$\Downarrow$ and a configuration for $\xrightarrow{}_{N}$. The flattening
+relation relates the free deBruijn indices of the base term and each term in
+the heap with the final location of the referenced closure, up to pointer
+equivalence. Then each deBruijn-indexed term is related to all alpha equivalent
+standard terms. The relation only holds when both terms are closed under their
+corresponding heaps. As a result, it trivially holds for the special case of
+initializing each configuration with a standard term and its corresponding
+deBruijn-indexed term, respectively. The proof is finished by induction on the
+step relation for each direction of the bisimulation.
 
 \subsection{Recursion}
 

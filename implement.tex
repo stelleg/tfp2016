@@ -90,11 +90,10 @@ shows the parts of syntax and semantics that are new or modified.
 
 \subsection{Omitted Extensions}
 
-Our representation omits a few other standard extensions. Here we address some
+Our implementation omits a few other standard extensions. Here we address some
 of these omissions.
 
-Data types are a common extension that we intentionally omit ~\cite{jonesstg,
-boquist1997grin}.  We take the approach of Sestoft ~\cite{sestoft} that these
+Data types are a common extension that we omit ~\cite{jonesstg,boquist1997grin}.  We take the approach of Sestoft ~\cite{sestoft} that these
 can be efficiently implemented with pure lambda terms. Consider a list data type
 (in Haskell
 syntax): \texttt{data List a = Cons a (List a) | Nil}. This can be represented in
@@ -106,14 +105,14 @@ compilers, even in the internal representation ~\cite{boquist1997grin,jonesstg}.
 Non-recursive let is syntactic sugar for a lambda binding and application, and
 thus we treat it as such. This approach helps to ensure that we are capable of
 compiling arbitrary lambda terms, while some approaches require pre-processing
-~\cite{sestoft, TIM}.
+~\cite{sestoft,TIM}.
 
 Recursive let bindings are another omission. Here we follow Rozas
 ~\cite{rozas1992taming}: if it can be represented in pure lambda terms, it should
 be. Thus, we implement recursion using the standard Y combinator. In the case of
 mutual recursion, we use the Y combinator in conjunction with a tuple of the
 mutually recursive functions. Without the appropriate
-optimizations~~\cite{rozas1992taming}, this approach has a large overhead, as we
+optimizations ~\cite{rozas1992taming}, this approach has a large overhead, as we
 discuss in Section~\ref{sec:res}.
 
 There is a common pattern in these omissions: if recursion, let bindings, data
@@ -146,7 +145,7 @@ $\lambda x.\lambda y.x$ can be implemented with \texttt{TAKE}, \texttt{POP},
 \item \texttt{ENTERVAL}: A \texttt{ENTER} instruction, when entering a
 closure that is already a value, should not push an update marker onto the
 stack. This shortcut prevents unnecessary writes to the stack and heap
-~\cite{jonesstg, lkm, sestoft}.  
+~\cite{jonesstg,lkm,sestoft}.  
 \end{itemize}
 
 \subsection{Garbage Collection}

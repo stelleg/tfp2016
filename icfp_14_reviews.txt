@@ -1,0 +1,399 @@
+
+----------------------- REVIEW 1 ---------------------
+PAPER: 20
+TITLE: Cactus Environment Machine: Shared Environment Call by Need
+AUTHORS: George Stelle, Darko Stefanovic, Stephen L. Olivier and Stephanie Forrest
+
+
+----------- REVIEW -----------
+This paper presents an implementation of the call-by-need lambda calculus that is new to my knowledge.  The main innovation (compared to Ager et al.'s presentation (Information Processing Letters 90(5):223-232, 2004) for example) is to store in each heap cell not just an updateable thunk or computed value but also a pointer to the outer environment.  (These pointers form the usual linked lists that are environments but are fused into the heap.  To enable this representation, an application (t1 t2) must be evaluated by evaluating the applied function (t1) first, before allocating the cell for the argument (t2).)  The authors emphasize that this implementation maximizes environment sharing and simplifies closure representation.  They also present some promising preliminary performance benchmarks.
+
+Even if this implementation strategy of call-by-need does not turn out to be the fastest on conventional hardware, there are enough unconventional places where we might want to implement call-by-need that a new strategy is still worth studying.  (For example, environment sharing may be much more desirable when we add nondeterminism to a call-by-need language.)  So I recommend accepting this paper.
+
+Section 4.1 (Correctness) is mostly obvious and should be much shortened.  More specifically, M correctness and N correctness are each an easy bisimulation, and should be explained as such.  Definition 1 and Lemma 1 are obvious, and the details about inductions given by the proofs don't add much understanding.  The statements of Lemma 2 and Definition 2 are confusing because many quantifiers are omitted and it's unclear where they are intended.  Also, Definition 2 should say explicitly what is being defined and, if it is recursive, whether the smallest or largest fixpoint is intended.
+
+Section 5 moves from a calculus to an abstract machine.  The beginning of Section 5 says "we derive" but no derivation is given and it is only explained informally how the abstract machine works.  In fact I believe the abstract machine can be obtained by CPS-converting and defunctionalizing the calculus evaluator, a derivation that would not surprise Danvy et al.  So Section 5 should be tightened using this celebrated account of "the correspondence with the calculus semantics from the previous section".
+
+Minor comments:
+
+I don't understand the example at the beginning of Section 3.1 (displayed after "we can view this approach as follows").  It seems that y is bound to p1, which the heap associates with the value p2 for z.  But looking at the example expression, shouldn't y be bound to the closure (\z.t1), without any particular value for z?
+
+Page 4 "derive novel call by need calculus" -> "derive our novel call-by-need calculus"
+
+Page 4 "uses of let bindings" -> "uses let bindings"
+
+Page 4 "define derivation complexity" -> "define the derivation complexity of"
+
+Page 6 "The Var2 rule... while the Var1 rule" -> "The Var1 rule... while the Var2 rule"
+
+Page 6 ", now points to" -> "now points to"
+
+At the end of page 7, "consisting of only x86_64 instructions" is confusing because didn't you just already say that "We compile to x86_64 assembly"?  It might help clarify if you say what the "two instructions" are.
+
+Page 8 "backend Section 8" -> "backend in Section 8"
+
+
+----------------------- REVIEW 2 ---------------------
+PAPER: 20
+TITLE: Cactus Environment Machine: Shared Environment Call by Need
+AUTHORS: George Stelle, Darko Stefanovic, Stephen L. Olivier and Stephanie Forrest
+
+
+----------- REVIEW -----------
+The paper develops a call-by-need calculus of closures, based on
+Curien's call-by-name calculus. The calculus is rather
+straightforwardly mapped to an abstract machine. The latter turns out
+to map to the actual, x86_64 hardware in simple and elegant way.  The
+result is an alternative (to STG) implementation of call-by-need,
+which is capable of running (some of the) real benchmarks, showing
+good performance.
+
+There is a lot to dislike about the paper, from the poor and confusing
+introduction and misguided motivation, to bad and badly explained
+examples, to suspicious proofs, to subpar formal content compared to
+other papers of call-by-need calculi, to too simplistic
+benchmarks. And yet I can't help but feel the appeal of the
+paper. Covered by many layers of poor presentation there is a gem.  I
+would classify the paper as a Functional Pearl and I will suggest its
+acceptance.  If the paper is accepted, the authors will have to do a
+quite a bit of re-writing to improve the presentation.
+
+I elaborate my criticisms below. There are very many of them. I
+understand that the review may appear to the authors as harsh and
+discouraging.  I must stress that somehow I do like the direction of
+this research, and the proposed calculus and especially the
+implementation scheme are elegant. I believe many other functional
+programmers, even those who are disappointed in lazy evaluation, will
+appreciate the results of the paper. The improved paper could (and
+should be) extended to a series of lectures taught as part of the
+standard CS curriculum on compilers and PL. Thus I hope the authors
+take my criticisms as suggestions for better presentation -- whether
+the paper is accepted at this conference or another one.
+
+
+Let me start with the motivation for this work, that ``call-by-need is
+desirable''. After all, the authors dedicated a subsection 2.2 to this
+topic. The authors think call-by-need ``embodies the best of both
+worlds [call-by-value and call-by-name]'' (Sec 2.2). They don't seem
+to be aware that call-by-need is a trade-off, assuming that it is
+always better to store an intermediate result for later use rather
+than recompute it. One of the best search strategies for large state
+spaces -- so-called 'iterative deepening' (far better than depth-first
+and breadth-first) -- is based on the principle that it is better to
+recompute than to store. Since this is just the opposite of lazy
+evaluation, implementing iterative deepening in Haskell is a
+nightmare. One has to work very hard to confuse the compiler and use
+the magic -fno-full-laziness flag, to avoid running out of memory on
+trivial search problems. So, calling call-by-need unqualified best is
+a mistake.
+
+Memory problems are the bane of call-by-need -- something that has
+been known for a long time. The old book by Simon Peyton-Jones has a
+special chapter on this topic:
+   http://research.microsoft.com/en-us/um/people/simonpj/papers/slpj-book-1987/
+see Chapter 23, especially Sec 23.3. Since then, things have not
+gotten better -- in fact, we now better recognize how bad memory
+problems are. Haskell programs achieve good performance not because but in
+spite of lazy evaluation -- because of the excellent strictness
+analyzer that lets arguments to be evaluated eagerly, and thanks to
+many strictness annotations (seq and bang patterns) manually inserted
+in many critical places. It is not an accident that the Haskell
+compilers implemented by Lennart Augustsson for the Standard Chartered
+Bank (which uses Haskell with great success) and Mark P Jones for the
+systems work implement the _strict_ dialect of Haskell. Another
+problem of laziness is almost impossibility of any sane effect
+system. That is why the Disciplined Disciple Compiler (DDC) also
+implements the strict dialect of Haskell. Thus the wealth of practical
+experience shows that lazy evaluation is *not* generally desirable.
+It helps in specific cases, but it is a wrong choice for the default
+case.
+
+I am not satisfied with the formal development. Little has been
+proven, and what is proven is not without doubt. The proof of N
+correctness (Lemma 3) depends on the definition of heap equivalence:
+
+mu_M === mu_N iff (c,mu_M) ->*M (nu,mu'_M) <==> 
+                  (c,mu_N) ->*M (nu,mu'_N) /\ mu'_M === mu'_N
+
+So, to verify that mu_M === mu_N we have to check that mu'M === mu'_N?
+Most of the time, mu'_M is bigger that mu_M, since it contains bindings
+added during the evaluation of c. So, checking the equivalence
+of two heaps requires checking the equivalence of bigger heaps. How is
+this supposed to work? Your definition is not an inductive
+definition. It is not clear if it defines anything.
+
+The proof of Lemma 3, cases MVar1, MVar2, MEval mention that domain of
+the heap stays the same. But NVar1 does change the contents of the
+heap. The definition of heap equivalence does not reduce to just the
+equality of their domains.
+
+In contrast, Ariola et al (ref [4] in the manuscript) prove much more
+and more rigorously.  Furthermore, the calculus presented in Fig 4 of
+the manuscript has a straightforward mapping to the heap calculus, Fig
+8 of [4], for which the authors of [4] proved correctness, their Prop
+8.2. They do note the problem with recursion in the presence of data
+constructors (Sec 7 of their paper). So the formal development in the
+manuscript paper is not only suspect but is also unnecessary. The
+authors would have saved themselves a lot of trouble by noting that
+their calculus is a simple elaboration of one of Ariola et al's
+calculi.
+
+The authors leave the proof of correct sharing to future work. This is
+unfortunate: if they have attempted it they would have found that they
+don't have the correct sharing. Consider the example from Ariola et
+al, sec 7.2:
+    let ones = cons 1 ones
+The authors implement list with Scott's encoding and recursive let via
+Y. But this implementation corresponds to the infinite unfolding
+   cons (1, cons (1, ...)
+That is, 'tail ones' will be physically distinct from ones in the authors
+implementation (different heap location). However, it should be the 
+same in call-by-need with data types (and it is the same in GHC: let
+does truly mean sharing). 
+
+Finally, the benchmarks in the paper are too simplistic. I would
+suggest to evaluate
+        foldl (+) 0 [1..10000]
+where foldl is the left fold. In old times, GHC will run out of space
+computing this sum. Nowadays the strict analyzer got better, although
+foldl (+) 0 [1..10000000] still runs much, much slower than
+foldl' (+) 0 [1..10000000].
+
+Miscellaneous comments
+
+p1: The introductory example is very confusing: ``Cactus Cathy is even
+lazier than Lyle, and she organizes her work in such a way that she
+can simply mark her place, and from that place all the necessary
+information for the device is guaranteed to be accessible.''
+What do you mean by ``mark her place''? What place? Where she sits?
+What guarantees that all information for the device is accessible
+there? All these questions show that the informal introduction serves
+more to confuse than clarify.
+``Edward is performing call by value, or
+eager, evaluation--performing all work as soon as it has been conceived.''
+What does this mean ``to conceive work''? Does producing \x.work
+count as conception? If it does, Edward is certainly not doing CBV.
+
+Sec 3.1, p3: 
+>    Closure t[x=p,y=p1]
+Shouldn't it be t[x=p,y=(\z.t1)[x=p]]?
+
+I got what the authors are trying to say in this section, but the
+presentation is very poor. We can't talk about run-time costs without
+fixing the details of the implementation, without fixing the machine.
+Some machines will not create any closure for (\y.t) at all.
+
+p3.
+> For a thunk in a lazy language a lookup will only be done once. The
+> thunk will be overwritten with a value, so the next time that heap
+> location is entered it will be entered with a value. Thus, the work to
+> ensure that the variable lookup is fast will be used only once.
+I don't at all understand what the paper is trying to say here: yes,
+when the variable is first looked up, the term it is bound to is
+evaluated, to WHNF and the result overwrites the binding. But the
+variable may be mentioned in the term several times. For example:
+         (\x. (x 1) + (x 2) + (x 3)) (\z. z+2)
+The closure (\z.z+2) will be entered three times; the variable x
+has to be located three times. For references to variables near the root
+of the cactus environment, we have to traverse the whole cactus
+environment, at the cost proportional to the depth of the environment.
+Variable lookup clearly has non-const cost, and the variable lookups
+are frequent.
+
+p3: Figure 3.1 => Figure 2.
+
+p4.
+> Our important insight here is that Curien's calculus of clo-
+> sures does not differentiate between flat and shared environment
+> representations, and indeed, no calculus that we are aware of does.
+First of all, isn't the point of a calculus to abstract over the
+details that are not relevant? Curien's calculus is a CBN calculus,
+sharing was not at all relevant. As to the other calculi, I have
+already mentioned the calculus in Ariola et al paper (Figure 8), which
+was already used in Launchbury's paper. The calculus in the manuscript
+is a very simple refinement of that calculus (the ordered heap in
+Ariola et al is just the one-dimensional representation of the
+shared-environment. That's why the order is significant.)
+
+p4: Lemma 1:
+Do you really need to prove it? It is a simple observation that none
+of the rules in call-by-name semantics modify any existing
+binding. Therefore, no sequence of the rule applications does it.
+Why do we need to spell out such trivial proofs?
+
+Sec 5:
+Please say that you take `context' and `stack' as synonymous.
+``in the middle of evaluating the term ...'' The evaluation of the
+term has many reductions. Which ``middle'' are you referring to?
+(Your picture corresponds to the near end of evaluating the term).
+
+p6.
+> This section describes how the C E machine can be implemented
+> with compiled code.
+This is confusing phrase. What you mean is mapping the CE machine to
+the actual x86_64 hardware (via an intermediate TIM step).
+
+p7: ENTER i: explain what it means to ``enter the closure''
+
+p7:
+> The PUSH instruction is particularly simple, consisting of only x86_64
+> instructions.
+You must have meant ``consisting of only TWO x86_64 instructions''
+
+p8, Fig 8: the rule (Int) is suspicious: n[l] is a value, and it can't
+be applied. I'd expect the (Int) rule to look as the (Upd) rule in
+Fig.5.
+Also, does the (Op) rule imply that op is a binary operation,
+requiring two operands on stack? You later claim in Sec 8.2, that all
+operations in your machine take only one argument.
+
+p8: you mention VAR at several places. Do you mean ENTER?
+
+p9:
+> however, we cannot know if u will be needed until either it is forced
+> after x,y and z are all forced, or it becomes free. In other words,
+What does it mean for the variable to become ``free''? In the
+calculus, free variable has a different meaning.
+
+List of references: please refer to conference proceedings rather than
+rather obscure SIGPLAN Notices, in refs 16, 20, 32.
+
+Ref [26]: Please spell the second author's last name as Peyton Jones.
+Peyton is not the middle name, it is the part of his last name.
+
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 20
+TITLE: Cactus Environment Machine: Shared Environment Call by Need
+AUTHORS: George Stelle, Darko Stefanovic, Stephen L. Olivier and Stephanie Forrest
+
+
+----------- REVIEW -----------
+## Summary
+
+The paper presents two semantics for pure lambda calculus terms that model a
+lazy language implementation with shared environments. Sharing in the
+environment eliminates some of the duplication in flat-environment
+implementations like GHC, at the expense of variable lookup time. The first
+calculus explicitly models sharing in the environments and is based on and
+shown equivalent to Curien's calculus of closures for call by name. The second
+is an abstract machine semantics (the CE machine) that extends the first with
+an explicit context and a counter for allocating fresh heap locations. The
+paper also describes a prototype implementation and presents some performance
+measurements in support of the claim that a lazy language utilizing shared
+environments is competitive performance-wise with the state of the
+art. Finally, the paper concludes with a discussion of possible optimizations.
+
+
+## Remarks
+
+I reviewed this paper for last year's ICFP (2013). This year's submitted paper
+has made several improvements. Specifically, the theory is more completely
+developed, the contributions are presented more accurately in the context of
+related work, and the writing is overall more readable. Accordingly, I have
+improved the paper's score.
+
+Even considering the improvements, however, I still do not recommend the paper
+for acceptance. There are two main issues. The first is that the idea of shared
+environments is not new. Using shared environments in a lazy language *is*
+novel, to my knowledge, but the incremental tweaks to the theory of
+call-by-need are not sufficiently interesting on their own. What is interesting
+is the claim that a lazy language implemented with shared environments is
+competitive performance-wise with the state of the art and thus the paper's
+contribution hinges on its support of this claim. Unfortunately, my second
+issue is that paper's experiments fall short in this regard and thus I do not
+feel the paper properly supports its claims.
+
+Specifically, the experimental setup suffers from four problems:
+
+1) The breadth of benchmarks is lacking and thus the reported data has no
+   predictive quality and does not support any general
+   conclusions. Specifically, the paper should include some benchmarks for
+   real-world programs. The submitted paper does improve on last year's
+   version, which measured four Church-numeral microbenchmarks, but not enough.
+
+   My previous review suggested implementing some of GHC's NoFib
+   benchmarks. The submitted paper adds performance data for 7 out of 15 of
+   NoFib's Imaginary benchmarks and none from the Spectral or Real set of
+   benchmarks. Given that the Imaginary benchmarks do not represent real-world
+   programs (the NoFib authors suggest to "ignore them completely"), no
+   conclusions can be drawn about the performance of the paper's implementation
+   for running real-world programs.
+
+2) The paper tries to compare the performance of incomparable systems.
+
+  - The comparison to UHC's performance is irrelevant. UHC focuses on compiler
+    extensibility and acknowledges that this comes at the expense of
+    performance so a comparison to UHC's performance is meaningless unless the
+    paper's system has similar extensibility goals.
+
+  - A comparison to GHC's performance is interesting but must be carefully
+    qualified since there is an enormous implementation and feature gap between
+    the two systems. GHC is an industrial-strength compiler with decades of
+    research and engineering effort and is used in a wide variety of real-world
+    applications, while the paper's prototype system is missing some features
+    that would be expected in even a minimal language core, such as recursion
+    and primitive data structures, and can thus run only small toy
+    programs. It's not really reasonable to extrapolate how the paper's system
+    would perform when extended with all of GHC's features because it's
+    impossible to know how different parts of a system will interact and how
+    that will affect overall performance.
+
+  - A proper scientific experiment should test the effect of changing one part
+    of a system by varying only that one part, and holding the rest of the
+    system constant. Perhaps it's too much to ask for a version of GHC that
+    uses shared environments, but at the very least, I wish the paper would
+    have additionally implemented and collected data for a version of its
+    lambda-calculus abstract machine that used flat environments, so that some
+    straightforward comparisons could be made. See Vitek and Kalibera's R3
+    paper for more guidelines for collecting empirical evidence.
+
+3) Even considering only the raw numbers at face value (compared to GHC) the
+   data does not support the paper's claim of time-performance competitiveness
+   with the state of the art, as most of the profiled programs are much slower
+   than even unoptimized GHC.
+
+4) The focus on time performance is somewhat puzzling. Given that lazy
+   languages are known to have space problems, and since one of the advantages
+   of shared environments is that they save space at the expense of time, I
+   expected some analysis of space usage, ideally in the context of a
+   space-time tradeoff analysis.
+
+
+In addition to the flawed experimentation, I ultimately do not agree with the
+premise of the paper on an intuitive level, that shared environments lead to
+faster lazy programs. It seems that a shared environment is precisely the wrong
+representation for lazy languages because canonical lazy programs (for example
+nqueens) will tend to have either many unused arguments or arguments used more
+than once, to maximize the benefits of delayed evaluation and memoization,
+respectively. To make the former fast, thunk allocation should be as cheap as
+possible. The paper claims that thunk allocation for the CE machine is fast but
+thunk allocation in general is already fast so I'm not sure there's much
+improvement here. For the latter, since shared environments require linear-time
+for variable lookups (as opposed to the constant-time lookup of flat
+environments), I would expect shared environments to perform slower than flat
+environments since I expect canonical lazy programs to use many variables more
+than once. As one point in support of this, the paper reports that its system
+executes the nqueens program nearly five times slower than unoptimized GHC. In
+summary, the situations where laziness is beneficial seem to be precisely the
+situations where the disadvantages of shared environments are greatest.
+
+
+## Additional Comments
+
+Though the writing in the paper has improved, there are still some areas that
+could use additional polishing. For example not all the notation, eg in Figure
+4, is explained. Each part of a figure should have an accompanying description
+in the prose.
+
+Another large source of confusion for me occurred when the paper transitioned
+from describing the theory to the implementation. In particular, the theory
+part of the paper culminates in the CE abstract machine as a model for a lazy
+language that uses shared environments, but then the paper describes an
+implementation that compiles programs to three completely different bytecode
+instructions that do not match the theory. I'm assuming that the CE machine
+instructions from the theory and the bytecode instructions used in the
+implementation are somehow equivalent but this is not obvious and should be
+explicitly described. For one thing, there are five CE instructions in the
+theory but only three instructions in the implementation. It also did not help
+that the implementation instructions are described via prose only.
