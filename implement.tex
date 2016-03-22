@@ -55,8 +55,8 @@ We compile to x64 assembly. Each of the three instructions is mapped onto
 x64 instructions with a macro. The \texttt{PUSH} instruction is particularly
 simple, consisting of only two x64 instructions (two \texttt{push}es, one for
 the code pointer and one for the environment pointer). This is actually an
-important point: \emph{thunk creation is only two instructions, regardless of
-environment size}.  
+important point: \emph{thunk creation is only two hardware instructions,
+regardless of environment size}.  
 
 \subsection{Machine Literals and Primitive Operations}
 
@@ -93,12 +93,12 @@ shows the parts of syntax and semantics that are new or modified.
 Our implementation omits a few other standard extensions. Here we address some
 of these omissions.
 
-Data types are a common extension that we omit ~\cite{jonesstg,boquist1997grin}.  We take the approach of Sestoft ~\cite{sestoft} that these
-can be efficiently implemented with pure lambda terms. Consider a list data type
-(in Haskell
-syntax): \texttt{data List a = Cons a (List a) | Nil}. This can be represented in
-pure lambda terms with $Cons = \lambda h.\lambda t.\lambda c.\lambda n.c h t$
-and $Nil = \lambda c.\lambda n.n$. 
+Data types are a common extension that we omit ~\cite{jonesstg,boquist1997grin}.
+We take the approach of Sestoft ~\cite{sestoft} that these can be efficiently
+implemented with pure lambda terms. Consider a list data type (in Haskell
+syntax): \texttt{data List a = Cons a (List a) | Nil}. This can be represented
+in pure lambda terms with $Cons = \lambda h.\lambda t.\lambda c.\lambda n.c \; h
+\; t$ and $Nil = \lambda c.\lambda n.n$. 
 
 Let bindings are another term commonly included in most functional language
 compilers, even in the internal representation ~\cite{boquist1997grin,jonesstg}.
@@ -129,9 +129,9 @@ completely unoptimized implementation. For example, there is no effort to
 discover global functions to avoid costly jumps to pointers in the heap
 ~\cite{jonesstg}. Indeed, every variable reference will look up the code pointer
 in the shared environment and jump to it. There is also no implementation of 
-control flow analysis as used in the Rozas paper to optimize away the Y
-combinator.  Thus, every recursive call exhibits the large overhead involved in
-re-calculating the fixed point of the function.  
+control flow analysis as used by Rozas to optimize away the Y combinator.  Thus,
+every recursive call exhibits the large overhead involved in re-calculating the
+fixed point of the function.  
 
 We do, however, implement a couple of basic optimizations, primarily to reduce
 the load on the heap:
@@ -142,7 +142,7 @@ instruction that throws away the operand on the top of the stack if there are no
 variables bound to the $\lambda$ term in question. For example, the function
 $\lambda x.\lambda y.x$ can be implemented with \texttt{TAKE}, \texttt{POP},
 \texttt{ENTER 0}.  
-\item \texttt{ENTERVAL}: A \texttt{ENTER} instruction, when entering a
+\item \texttt{ENTERVAL}: An \texttt{ENTER} instruction, when entering a
 closure that is already a value, should not push an update marker onto the
 stack. This shortcut prevents unnecessary writes to the stack and heap
 ~\cite{jonesstg,lkm,sestoft}.  
@@ -152,7 +152,7 @@ stack. This shortcut prevents unnecessary writes to the stack and heap
 
 We implement a simple mark and sweep garbage collector with the property
 that it does not require two spaces, due to the constant sized closures in the
-heap, allowing for a linked list representation for the free cells.  Indeed,
+heap, allowing a linked list representation for the free cells.  Indeed,
 while the abstract machine from Section~\ref{sec:mach} increments a free heap
 counter, the actual implementation uses the next free cell in the linked list.
 

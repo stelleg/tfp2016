@@ -1,41 +1,34 @@
 \section{Introduction}
 
-Call-by-need evaluation is notoriously slow, and replaced by strict evaluation
-where possible\cite{burn1986strictness}. There are a number of contributing
-factors for why this is the case, but the one we focus on in this paper is the
-cost of delayed computations, or \emph{thunks}. The goal of this work will be to
-minimize the this cost. The key idea of the \emph{Cactus Environment Machine} is
-to use a shared environment to minimize the cost of thunks, and thus implement
-call-by-need efficiently. 
+Existing implementations of call-by-need take care in \emph{packaging} a delayed
+computation, or \emph{thunk}, by building a closure with an array binding all
+free variables \cite{jonesstg,boquist1997grin}. The overhead induced by
+this operation is well known, and one reason for avoiding thunks wherever
+possible \cite{johnsson1984efficient}. The key insight of our \emph{Cactus
+Environment ($\mathcal{CE}$) Machine} is that we can minimize this overhead by
+constructing the computation and environment to save our spot, like a
+\emph{bookmark}.
 
-We view the current situation as follows: Existing implementations take care in
-\emph{packaging} a thunk. For example, a graph reduction machine has to
-"construct the graph" for the right hand side of an application to delay the
-computation \cite{landin1964mechanical}. One way to view the work in this paper
-is that instead of packaging a thunk, we construct the computation so that we
-may save our spot, like a \emph{bookmark}, so that we can later return to
-compute the delayed computation. 
-
-As an illustrating example, consider the application $t \; t'$. In existing call
-by-need implementations, e.g. the STG machine, a closure with a flat environment
-will be constructed for $t'$.  This has a time and memory cost proportional to
-the number of free variables for $t'$ \footnote{in some implementations, these
-will be lambda lifted to be formal parameters, but the principle is the same}.
-The approach we take is to minimize this packaging cost by saving our place in a
-shared environment, which results in only requiring two machine words (and two
-instructions) for the thunk: one for the code pointer, and one for the
-environment pointer. One way to think about our approach is that it is
-\emph{lazier} about lazy evaluation: in the case that $t'$ is unneeded, the work
-to package it in a thunk is entirely wasted. In the spirit of lazy evaluation,
-we attempt to minimize this potentially unnecessary work.  
+As an example, consider the application $t \; t'$. In existing call-by-need
+implementations, e.g., the STG machine, a closure with a flat environment will be
+constructed for $t'$.  This has a time and memory cost proportional to the
+number of free variables of $t'$ \footnote{in some implementations, these will
+be lambda lifted to be formal parameters, but the principle is the same}.  We
+minimize this packaging cost by saving our place in a shared environment, which
+results in requiring only two machine words (and two instructions) for the
+thunk: one for the code pointer, and one for the environment pointer. One way to
+think about our approach is that it is \emph{lazier} about lazy evaluation: in
+the case that $t'$ is unneeded, the work to package it in a thunk is entirely
+wasted. In the spirit of lazy evaluation, we attempt to minimize this
+potentially unnecessary work.  
 
 The main contributions of the paper are:
 \begin{itemize}
 \item A big-step and small-step semantics that formalize the notion of a shared
 environment for call-by-need evaluation using an explicitly shared environment
 (Section~\ref{sec:calc}).
-\item A simple compiled implementation of the small-step semantics and
-preliminary evaluation, which shows performance comparable to existing
+\item A simple compiled implementation of the small-step semantics with a 
+preliminary evaluation that shows performance comparable to existing
 implementations (Sections~\ref{sec:impl} and~\ref{sec:eval}).
 \end{itemize}
 
@@ -51,10 +44,10 @@ in a natural way to implement lazy evaluation, and gives its formal semantics.
 We then describe a straightforward implementation of $\mathcal{CE}$ in
 Section~\ref{sec:impl}, extended with machine literals and primitive operations,
 compiling directly to native code. We evaluate the implementation in
-Section~\ref{sec:eval}, showing that it is capable of performing competitively,
-despite lacking several common optimizations, and discuss the results. We
-conclude by discussing related work, the limitations of our approach, and give
-some ideas for future work in Section~\ref{sec:disc}, and conclude the paper in
-Section~\ref{sec:conc}.
+Section~\ref{sec:eval}, showing that it is capable of performing comparably to
+existing implementations, despite lacking several common optimizations, and
+discuss the results. We discuss related work, the limitations of our approach,
+and some ideas for future work in Section~\ref{sec:disc}, and conclude the
+paper in Section~\ref{sec:conc}.
 
 

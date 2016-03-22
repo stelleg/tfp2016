@@ -41,20 +41,16 @@
 Existing machines for lazy evaluation use a \emph{flat} representation of
 environments, storing the terms associated with free variables in an array.
 Combined with a heap, this structure supports the shared intermediate results
-required by lazy evaluation.  This paper proposes and describes an alternative
+required by lazy evaluation.  We propose and describe an alternative
 approach that uses a \emph{shared} environment to minimize the overhead of
 delayed computations. We show how a shared environment can act as both an
 environment and a mechanism for sharing results. To formalize this approach, we
-describe a novel calculus that makes the shared environment explicit, as well as
-a machine to implement the calculus: the \emph{Cactus Environment Machine}
-($\mathcal{CE}$ machine). A simple compiler implements the machine and is used
-to run experiments for assessing performance.  The results show reasonable
-performance and suggest that with the addition of some common optimizations, the
-$\mathcal{CE}$ machine could be competitive with existing high performance lazy
-evaluation implementations.
-%In addition, we implement a simple compiler that targets native code and show
-%that it has reasonable performance despite some significant
-%but addressable shortcomings.
+introduce a calculus that makes the shared environment explicit, as well as
+a machine to implement the calculus, the \emph{Cactus Environment Machine}
+. A simple compiler implements the machine and is used to run experiments for
+assessing performance. The results show reasonable performance and suggest that
+incorporating this approach into real world compilers could give performance
+benefits in some scenarios.
 \end{abstract}
 
 \input{intro}

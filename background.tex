@@ -25,18 +25,18 @@ explicit substitution. To solve this, the standard approach uses closures
 Closures combine a term with an environment, which binds the free variables in
 the term to closures. 
 
-For a formal basis, we use Curien's calculus of closures, given in
-Figure~\ref{fig:calcclos}~\cite{curien1991abstract}.  It is a formalization of
-closures with an environment represented as a list of closures, indexed by
-deBruijn indices. We will occasionally modify this calculus by replacing the
-deBruijn indices with variables for readability, in which case variables are
-looked up in the environment instead of indexed, e.g., $t[x = c, y = c'])$
-~\cite{barendregt1984lambda}. We also add superscript and subscript markers to
-denote unique syntax elements, e.g., $t', t_1 \in \textnormal{Term}$. 
+For a formal basis, we use Curien's calculus of
+closures~\cite{curien1991abstract}, given in Figure~\ref{fig:calcclos}.  It is a
+formalization of closures with an environment represented as a list of closures,
+indexed by deBruijn indices. We will occasionally modify this calculus by
+replacing the deBruijn indices with variables for readability, in which case
+variables are looked up in the environment instead of indexed, e.g., $t[x = c, y
+= c'])$ ~\cite{barendregt1984lambda}. We also add superscript and subscript
+markers to denote unique syntax elements, e.g., $t', t_1 \in \textnormal{Term}$. 
 
 \subsection{Evaluation Strategies} \label{sec:eval}
 
-There are three evaluation strategies for lambda calculus worth noting:
+There are three standard evaluation strategies for lambda calculus:
 call-by-value, call-by-need, and call-by-name.  Call-by-value evaluates every argument
 to a value, whereas call-by-need and call-by-name only evaluate an argument if
 it is needed.  If an argument is needed more than once, call-by-name re-computes
@@ -47,25 +47,26 @@ are intuitively \emph{good} properties to have, and we illustrate the
 correctness of such an intuition with the following example, modified from
 ~\cite{danvy2013synthetic}:
 
-$$ \overbrace{c_m (c_m (\cdots(c_m}^{m} \; id \;  id)\cdots) id) \; true \; id
+$$ \overbrace{c_m (c_m (\cdots(c_m}^{m} \; id \; \overbrace{id)\cdots) id)}^{m} \; true \; id
 \; bottom $$ where $c_n = \lambda s.\lambda z.\overbrace{s \; (s \cdots (s}^{n}
 \; z) \cdots) $, $true = \lambda t.\lambda f.t$, $id=\lambda x.x$, and $bottom =
 (\lambda x.x \; x) \lambda x.x \; x$. Call-by-value never terminates,
 call-by-name takes exponential time, and call-by-need takes only polynomial time
 ~\cite{danvy2013synthetic}. Of course, this is a contrived example, but it
-illustrates why call-by-need has some desirable properties.
+illustrates desirable properties of call-by-need.
 
 In practice, however there are significant issues with call-by-need evaluation.
-We focus on the following issue: \emph{Delaying a computation is slower than
-performing it immediately.} This issue is well known in the literature, and has
-become part of the motivation for a tool called \emph{strictness analysis},
-which transforms non-strict evaluation to strict when possible
-\cite{mycroft1982abstract,wadler1987projections}. 
+We focus on the following: \emph{Delaying a computation is slower than
+performing it immediately.} This issue is well known
+\cite{johnsson1984efficient,jonesstg}, and has become part of the motivation
+for \emph{strictness analysis}
+\cite{mycroft1982abstract,wadler1987projections}, which transforms non-strict
+evaluation to strict when possible.
 
 \subsection{Existing Call-by-Need Machines}
 
 Diehl et al. ~\cite{diehl2000abstract} review the call-by-need
-literature in detail.  Here we summarizes a few key points.
+literature in detail.  Here we summarize a few key points.
 
 The best known machine for lazy evaluation is the Spineless Tagless
 G-Machine (STG machine), which underlies the Glasgow Haskell Compiler (GHC). 
@@ -74,22 +75,21 @@ or some combination ~\cite{jonesstg}. The STG machine is the
 most widely used lazy evaluation machine. 
 
 Two other influential lazy evaluation machines relevant to the $\mathcal{CE}$
-machine are: the call-by-need Krivine machines
-~\cite{lkm,krivine2007call,sestoft}, and the three instruction machine (TIM)
-~\cite{TIM}.  Krivine started as an approach to call-by-name evaluation, and was
-later extended to call-by-need
+machine are the call-by-need Krivine machines
+~\cite{lkm,krivine2007call,sestoft}, and the three-instruction machine (TIM)
+~\cite{TIM}.  Krivine machines started as an approach to call-by-name
+evaluation, and were later extended to call-by-need
 ~\cite{krivine2007call,sestoft,danvy2013synthetic,lkm}.  The $\mathcal{CE}$
 modifies the lazy Krivine machine to capture the environment sharing given by
-the cactus environment. The TIM is an influential
-implementation of call-by-need and call-by-name ~\cite{TIM}.  It involves, as
-the name suggests, three machine instructions, \texttt{TAKE}, \texttt{PUSH}, and
-\texttt{ENTER}. In Section~\ref{sec:impl}, we follow Sestoft ~\cite{sestoft} and
+the cactus environment. The TIM is an implementation of call-by-need and
+call-by-name ~\cite{TIM}.  It involves, as the name suggests, three machine
+instructions, \texttt{TAKE}, \texttt{PUSH}, and \texttt{ENTER}. In
+Section~\ref{sec:impl}, we follow Sestoft ~\cite{sestoft} and
 re-appropriate these instructions for the $\mathcal{CE}$ machine.
 
 There has also been recent interest in \emph{heapless} abstract
 machines for lazy evaluation. Danvy et al. ~\cite{danvy2012inter} and
-Garcia et al.  ~\cite{garcia2009lazy}, independently derived similar
+Garcia et al. ~\cite{garcia2009lazy} independently derived similar
 machines from the call-by-need lambda calculus
-~\cite{ariola1995call}. We will return to this work in
-Section~\ref{sec:disc}.  These are interesting approaches, but it is
-not yet clear how these machines could be implemented efficiently.
+~\cite{ariola1995call}. These are interesting approaches, but it is not yet
+clear how these machines could be implemented efficiently.

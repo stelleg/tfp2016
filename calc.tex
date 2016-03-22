@@ -2,8 +2,8 @@
 
 This section shows how the shared environment approach can be applied to
 call-by-need evaluation. We start with a calculus with environments that can be
-represented in either a shared or flat manner: Curien's calculus of closures,
-and show how it can be modified to force sharing. See Curien's call-by-name
+represented in either a shared or flat manner, Curien's calculus of closures,
+and we show how it can be modified to force sharing. See Curien's call-by-name
 calculus of closures in Figure~\ref{fig:calcclos}\footnote{Curien calls it a
 ``lazy'' evaluator, and there is some ambiguity with the term lazy, but we use the
 term only to mean call-by-need. We also remove the condition checking that $i <
@@ -30,12 +30,7 @@ novel call-by-need calculus.
 {t_1 t_3[\rho] \rightarrow_L t_2[t_3[\rho] \cdot \rho'] } 
 \end{align*}
 \begin{align*}
-\tag{LVar1} 0[c \cdot \rho] \rightarrow_L c
-\end{align*}
-\begin{align*}
-\tag{LVar2} \inference
-{i > 0}
-{i[c \cdot \rho] \rightarrow_L (i-1)[\rho]}
+\tag{LVar} i [c_0 \cdot c_1 \cdot ... c_i \cdot \rho] \rightarrow_L c_i
 \end{align*}
 \caption{Curien's call-by-name calculus of closures}
 \label{fig:calcclos}
@@ -43,7 +38,7 @@ novel call-by-need calculus.
 
 To start, consider again the example from Section~\ref{sec:env}, this
 time with deBruijn indices: $(\lambda(\lambda t) \; (\lambda t_1)) t_2$.  The
-terms $t$ and $t_1$ when evaluated in the closure calculus, would have the
+terms $t$ and $t_1$, when evaluated in the closure calculus, would have the
 following environments, respectively: 
 
 \begin{center}
@@ -54,7 +49,7 @@ following environments, respectively:
 \end{center}
 
 Again, the second closure in each environment is the same closure.  And again,
-we can represent these environments with a shared environment, this time,
+we can represent these environments with a shared environment, this time
 keeping call-by-need evaluation in mind:
 \begin{center}
 \begin{tikzpicture}[ 
@@ -78,18 +73,17 @@ closures in the path to the root.  If $t_2[\bullet]$ is a thunk, and is updated
 in place with the value after its first reference, then both environments would
 contain the resulting value. This is exactly the kind of sharing that is
 required by call-by-need, and thus we can use this structure to build a
-call-by-need evaluator. This is the essence of the idea behind the cactus
-environment calculus and the cactus environment ($\mathcal{CE}$) machine. Our
-important insight here is that Curien's calculus of closures does not
-differentiate between flat and shared environment representations, and indeed,
-no calculus that we are aware of has had the need to.
+call-by-need evaluator. This is the essence of the cactus environment calculus
+and the cactus environment ($\mathcal{CE}$) machine. 
 
-Therefore, we must derive our own calculus of closures, forcing the environment
-to be shared. Because we can hold the closure directly in the environment, we
-choose to replace the standard heap of closures with a \emph{heap of
-environments}. Because sharing is required, we extend Curien's calculus of
-closures to include our heap of environments, or what we will refer to as a
-\emph{cactus environment}. 
+Curien's calculus of closures does not differentiate between flat and shared
+environment representations, and indeed, no calculus that we are aware of has
+had the need to. Therefore, we must derive our own calculus of closures, forcing
+the environment to be shared. Because we can hold the closure directly in the
+environment, we choose to replace the standard heap of closures with a
+\emph{heap of environments}. Because sharing is required, we extend Curien's
+calculus of closures to include our heap of environments, or what we will refer
+to as a \emph{cactus environment}. 
 
 See Figure~\ref{fig:calccact} for the syntax and semantics of the cactus
 calculus. Recall that we are only concerned with evaluation of closed terms. The
@@ -101,11 +95,11 @@ for the proof. The rule for application (MEval and NEval) is identical for
 both semantics: each evaluates the left hand side to a function, then binds
 the variable in the cactus environment, extending the current environment.
 The only difference between this semantics and Curien's is that if we need
-to extend an environment multiple times, the semantics \emph{require}
-that we share said environment among the extensions. This makes no real
+to extend an environment multiple times, the semantics \emph{requires}
+sharing said environment among the extensions. This makes no real
 difference for call-by-name, but it is needed for the sharing of results in the
-NVar1 rule. The explicit environment sharing ensures that the closure that is
-overwritten with a value is shared between instances of that variable. 
+NVar rule. The explicit environment sharing ensures that the closure that is
+overwritten with a value is shared among instances of that variable. 
 
 \begin{figure*}
 \textbf{Syntax}
@@ -126,14 +120,9 @@ overwritten with a value is shared between instances of that variable.
 {(t \; t_3[l], \mu) \rightarrow_{M} (t_2[f], \mu'[f \mapsto t_3[l] \cdot l'])}  
 \end{align*}
 \begin{align*}
-\tag{MVar1} \inference 
-{\mu(l) = c \cdot l'}
-{(0[l],\mu) \rightarrow_M (c,\mu)}
-\end{align*}
-\begin{align*}
-\tag{MVar2} \inference
-{i > 0 \quad \mu(l) = c \cdot l'}
-{(i[l],\mu) \rightarrow_M ((i-1)[l'],\mu)}
+\tag{MVar} \inference 
+{\mu(l, i) = l' \mapsto c \cdot l''}
+{(i[l],\mu) \rightarrow_M (c,\mu)}
 \end{align*}
 \textbf{Call-by-Need Semantics}
 \begin{align*}
@@ -142,14 +131,9 @@ overwritten with a value is shared between instances of that variable.
 {(t \; t_3[l], \mu) \rightarrow_{N} (t_2[f], \mu'[f \mapsto t_3[l] \cdot l'])}  
 \end{align*}
 \begin{align*}
-\tag{NVar1} \inference
-{\mu(l) = c \cdot l' \quad (c, \mu) \xrightarrow{* }_{N} (v, \mu')}
-{(0[l],\mu) \rightarrow_N (v, \mu'[l \mapsto v \cdot l'])}
-\end{align*}
-\begin{align*}
-\tag{NVar2} \inference
-{i > 0 \quad \mu(l) = c \cdot l'}
-{(i[l],\mu) \rightarrow_N ((i-1)[l'], \mu)}
+\tag{NVar} \inference
+{\mu(l, i) = l' \mapsto c \cdot l'' \quad (c, \mu) \xrightarrow{* }_{N} (v, \mu')}
+{(i[l],\mu) \rightarrow_N (v, \mu'[l' \mapsto v \cdot l''])}
 \end{align*}
 \caption{Cactus calculus syntax and semantics.}
 \label{fig:calccact}
@@ -157,8 +141,8 @@ overwritten with a value is shared between instances of that variable.
 
 \subsection{Correctness}
 
-Here we show that there is a strong bisimulation between
-$\rightarrow_{N}$ and their operational semantics (Figure~\ref{fig:cbn}). 
+Here we show that there is a strong bisimulation between $\rightarrow_{N}$ and
+Ariola et al.'s operational semantics, $\Downarrow$ (Figure~\ref{fig:cbn}). 
 
 \begin{figure}
 \begin{align*}
@@ -184,7 +168,7 @@ x.t_n \\ \langle \Psi, x' \mapsto t_m \rangle [x'/x]t_n \Downarrow \langle
 \end{figure}
 
 {\theorem \textnormal{(Strong Bisimulation)} $$\xrightarrow{}_{N} \; \sim \;
-\Downarrow$$.}
+\Downarrow$$}
 We start with a \emph{flattening} relation between a configuration for
 $\Downarrow$ and a configuration for $\xrightarrow{}_{N}$. The flattening
 relation relates the free deBruijn indices of the base term and each term in
