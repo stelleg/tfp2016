@@ -1,13 +1,15 @@
 \section{Introduction}
 
-Existing implementations of call-by-need take care in \emph{packaging} a delayed
+Call-by-need evaluation is a formalization of the idea that work
+should be delayed until needed, and only performed once.  Existing
+implementations of call-by-need take care in \emph{packaging} a delayed
 computation, or \emph{thunk}, by building a closure with an array binding all
-free variables \cite{jonesstg,boquist1997grin}. The overhead induced by
-this operation is well known, and one reason for avoiding thunks wherever
-possible \cite{johnsson1984efficient}. The key insight of our \emph{Cactus
-Environment ($\mathcal{CE}$) Machine} is that we can minimize this overhead by
-constructing the computation and environment to save our spot, like a
-\emph{bookmark}.
+free variables \cite{jonesstg,boquist1997grin}. The overhead induced by this
+operation is well known, and one reason existing implementations avoid thunks
+wherever possible \cite{johnsson1984efficient}. The key insight of our
+\emph{Cactus Environment ($\mathcal{CE}$) Machine} is that we can minimize this
+overhead by constructing the computation to bookmark a location in the
+environment that it can return to later if needed.
 
 As an example, consider the application $t \; t'$. In existing call-by-need
 implementations, e.g., the STG machine, a closure with a flat environment will be
@@ -24,10 +26,10 @@ potentially unnecessary work.
 
 The main contributions of the paper are:
 \begin{itemize}
-\item A big-step and small-step semantics that formalize the notion of a shared
-environment for call-by-need evaluation using an explicitly shared environment
-(Section~\ref{sec:calc}).
-\item A simple compiled implementation of the small-step semantics with a 
+\item A big-step calculus and small-step abstract machine that formalize the
+notion of a shared environment for call-by-need evaluation using an explicitly
+shared environment (Section~\ref{sec:calc}).
+\item A simple compiled implementation of the abstract machine with a 
 preliminary evaluation that shows performance comparable to existing
 implementations (Sections~\ref{sec:impl} and~\ref{sec:eval}).
 \end{itemize}
