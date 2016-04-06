@@ -4,11 +4,8 @@ This section describes experiments that assess the strengths and weaknesses of
 the $\mathcal{CE}$ machine. We evaluate using benchmarks from the \texttt{nofib}
 benchmark suite. Because we have implemented only machine integers, and must
 translate the examples by hand, we use a subset of the \texttt{nofib} suite that
-does not use floating point values or arrays. Ideally, we would have a compiler
-from Haskell to our intermediate representation. We discuss the possibility of a
-Haskell compiler using our implementation as a backend in
-Section~\ref{sec:disc}. A list of the benchmarks used and a brief description is
-given in Figure~\ref{fig:bench}.
+and exclude floating point values or arrays. A list of the benchmarks used and a
+brief description is given in Figure~\ref{fig:bench}.
 
 \begin{figure}
 \begin{itemize}
@@ -30,7 +27,7 @@ a subset of a list.
 \label{fig:bench}
 \end{figure}
 
-We compare the $\mathcal{CE}$ machine with two existing implementations:
+We compare the $\mathcal{CE}$ machine to two existing implementations:
 
 \begin{itemize}
 \item GHC: The Glasgow Haskell compiler. A high performance, optimizing compiler
@@ -39,9 +36,7 @@ based on the STG machine \cite{jonesstg}.
 GRIN machine \cite{boquist1997grin,dijkstra2009architecture}.
 \end{itemize}
 
-We use GHC version 7.10.3 and UHC version 1.1.9.3. We compile with both -O0 and
--O3, and show the results for both. For GHC, we use the -H flag from the runtime
-system options to set the default heap size to the same value as the
-$\mathcal{CE}$ machine (1G) to avoid measuring the performance of GC
-implementations. The tests were run on an Intel(R) Xeon(R) CPU E5-4650L @
-2.60GHz, running Linux version 3.16. 
+We use GHC version 7.10.3 and UHC version 1.1.9.3. We compile with -O0 and -O3,
+and show the results for both. Where possible, we pre-allocate a heap of 1GB 
+to avoid measuring the performance of GC implementations. The tests were run on
+an Intel(R) Xeon(R) CPU E5-4650L @ 2.60GHz, running Linux version 3.16. 

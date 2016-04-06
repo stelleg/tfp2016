@@ -1,8 +1,7 @@
 \section{$\mathcal{CE}$ Machine} \label{sec:mach}
 
 Using the calculus of cactus environments defined in the previous section, we
-derive an abstract machine: the $\mathcal{CE}$ machine\footnote{No relation to
-Felleisen and Friedman's CEK machine~\cite{felleisen1986control}}. The syntax
+derive an abstract machine: the $\mathcal{CE}$ machine. The syntax
 and semantics are defined in Figure~\ref{fig:CEM}. 
 
 \begin{figure*}
@@ -50,17 +49,17 @@ and semantics are defined in Figure~\ref{fig:CEM}.
 The machine operates on a similar syntax as the calculus, extended only with a
 context to implement the updates from the NVar subderivation ($u:=\sigma$) and
 the operands from the NEval subderivation ($\sigma \; c$). We also add $f$
-explicitly, which is our fresh heap location. Thus, we now have a 4-tuple, with
+explicitly, which is the fresh heap location. Thus, we now have a 4-tuple, with
 initial state $\langle t[0], \square, \epsilon[0=\bullet], 1\rangle$. The four
 parts of the tuple are the current closure, the context, the heap, and the fresh
-heap location. On the update rule, our current closure is a value, and there is
+heap location. On the update rule, the current closure is a value, and there is
 an update marker as the outermost context. This implies that a variable was
-entered, and our current closure represents the corresponding value for that
-variable.  Thus, we update the location $u$ that the variable entered, replacing
+entered and that the current closure represents the corresponding value for that
+variable. Thus, we update the location $u$ that the variable entered, replacing
 whatever term was entered with the current closure. The Lam rule takes an
 argument off the context and binds it to a variable, allocating a fresh heap
 location for the bound variable. This ensures that every instance of the
-variable will point to this location, and thus the bound term will only be
+variable will point to this location, and thus the bound term will be
 evaluated at most once. The App rule simply pushes an argument term in the
 current environment. The Var1 rule enters the closure pointed to by the
 environment location, while the Var2 rule traverses the cactus environment to
@@ -77,12 +76,11 @@ $a$ from the application $c \; a$) now points to the updated value.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/18.pdf}
-The dotted lines represent the environment for the bound closure, and the solid
-lines represent the next environment cell:  $t[dotted] \cdot solid$. The
-variables are left in for readability, but can be trivially replaced with
-deBruijn indices. 
 
-\caption{$\mathcal{CE}$ machine state example}
+\caption{$\mathcal{CE}$ machine state example.  The dotted lines represent the
+environment for the bound closure, and the solid lines represent the next
+environment cell:  $t[dotted] \cdot solid$.  Variables are left in for
+readability, but can be trivially replaced with deBruijn indices.  }
 \label{fig:state}
 \end{figure}
 

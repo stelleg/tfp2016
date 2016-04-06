@@ -1,4 +1,4 @@
-\section{Discussion} \label{sec:disc}
+\section{Discussion and Related Work} \label{sec:disc}
 
 While we have presented some of the related work throughout the paper, we use
 this section to further address related work. We also discuss a number of
@@ -46,9 +46,15 @@ optimization, but leave the full implementation and description for future work.
 \subsection{Register Allocation} \label{sec:alloc}
 One advantage of flat environments is that register allocation is
 straightforward \cite{appel2006compiling,jonesstg,terei2010llvm}. It is less
-obvious on how to do register allocation with the $\mathcal{CE}$ machine.
+obvious how to do register allocation with the $\mathcal{CE}$ machine.
 We speculate that \emph{only strict free variables should be loaded into
 registers}. That is to say, the environment variables may not be used, and only
 the ones we are sure will be used should be loaded into registers: the rest
 should be loaded on demand.
 
+\subsection{Verification}
+One attractive property of this implementation is its simplicity. This property
+makes it an attractive target for a verified compiler. Because it avoids
+complexities required for flat environment implementations, e.g. black hole
+updates, basing a verified compiler on this machine is an exciting area for
+future work. 

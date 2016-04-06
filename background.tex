@@ -6,16 +6,16 @@ closures.
 
 \subsection{Preliminaries}
 
-We begin with the simple lambda calculus:  $$ t::= x \; | \;  \lambda x.t \; |
-\;  t \; t $$ where $x$ is a variable, $\lambda x.t$ is an abstraction, and $t
-\; t$ is an application. We also use lambda calculus with deBruijn indices,
-which replace variables with a natural number indexing into the binding lambdas.
-This calculus is given by the syntax: $$ t::= i \; | \; \lambda t \; | \; t \; t
-$$ where $i \in \mathbb{N}$. In both cases, we use the standard Barendregt
-syntax conventions, namely that applications are left associative and the bodies
-of abstractions extend as far as possible to the right
-~\cite{barendregt1984lambda}.  A \emph{value} in lambda calculus refers to an
-abstraction. We are concerned only with evaluation to weak head normal form
+We begin with the simple lambda calculus ~\cite{barendregt1984lambda}:  $$ t::= x
+\; | \;  \lambda x.t \; | \;  t \; t $$ where $x$ is a variable, $\lambda x.t$
+is an abstraction, and $t \; t$ is an application. We also use lambda calculus
+with deBruijn indices, which replace variables with a natural number indexing
+into the binding lambdas.  This calculus is given by the syntax: $$ t::= i \; |
+\; \lambda t \; | \; t \; t $$ where $i \in \mathbb{N}$. In both cases, we use
+the standard Barendregt syntax conventions, namely that applications are left
+associative and the bodies of abstractions extend as far as possible to the
+right ~\cite{barendregt1984lambda}.  A \emph{value} in lambda calculus refers to
+an abstraction. We are concerned only with evaluation to weak head normal form
 (WHNF), in which evaluation terminates on an abstraction without entering its
 body.
 
@@ -25,7 +25,7 @@ explicit substitution. To solve this, the standard approach uses closures
 Closures combine a term with an environment, which binds the free variables in
 the term to closures. 
 
-For a formal basis, we use Curien's calculus of
+For a formal basis for closures, we use Curien's calculus of
 closures~\cite{curien1991abstract}, given in Figure~\ref{fig:calcclos}.  It is a
 formalization of closures with an environment represented as a list of closures,
 indexed by deBruijn indices. We will occasionally modify this calculus by
@@ -66,7 +66,7 @@ evaluation to strict when possible.
 \subsection{Existing Call-by-Need Machines}
 
 Diehl et al. ~\cite{diehl2000abstract} review the call-by-need
-literature in detail.  Here we summarize a few key points.
+literature in detail.  Here we summarize the most relevant points.
 
 The best known machine for lazy evaluation is the Spineless Tagless
 G-Machine (STG machine), which underlies the Glasgow Haskell Compiler (GHC). 

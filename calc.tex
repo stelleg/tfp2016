@@ -1,19 +1,19 @@
 \section{Cactus Environment Calculus} \label{sec:calc}
 
 This section shows how the shared environment approach can be applied to
-call-by-need evaluation. We start with a calculus with environments that can be
-represented in either a shared or flat manner, Curien's calculus of closures,
-and we show how it can be modified to force sharing. See Curien's call-by-name
-calculus of closures in Figure~\ref{fig:calcclos}\footnote{Curien calls it a
-``lazy'' evaluator, and there is some ambiguity with the term lazy, but we use the
-term only to mean call-by-need. We also remove the condition checking that $i <
-m$ because we are only concerned with the evaluation of closed terms.}.
+call-by-need evaluation. We start with a calculus that abstracts away
+environment representation, Curien's calculus of closures, and we show how it
+can be modified to force sharing. See Curien's call-by-name calculus of closures
+in Figure~\ref{fig:calcclos}. \footnote{Curien calls it a ``lazy'' evaluator, and
+there is some ambiguity with the term lazy, but we use the term only to mean
+call-by-need. We also remove the condition checking that $i < m$ because we are
+only concerned with evaluation of closed terms.}
 
 The LEval rule pushes a closure onto the environment, and the LVar rule indexes
 into the environment, entering the corresponding closure. We show in this
 section that by removing ambiguity about how the environments are represented,
-and forcing them to be represented in a \emph{cactus stack}, we can define our
-novel call-by-need calculus.
+and forcing them to be represented in a \emph{cactus stack}
+~\cite{stenstrom1988vlsi}, we can define our novel call-by-need calculus.
 
 \begin{figure}
 \textbf{Syntax}
@@ -32,7 +32,7 @@ novel call-by-need calculus.
 \begin{align*}
 \tag{LVar} i [c_0 \cdot c_1 \cdot ... c_i \cdot \rho] \rightarrow_L c_i
 \end{align*}
-\caption{Curien's call-by-name calculus of closures}
+\caption{Curien's call-by-name calculus of closures ~\cite{curien1991abstract}}
 \label{fig:calcclos}
 \end{figure}
 
@@ -48,7 +48,7 @@ following environments, respectively:
 \end{tikzpicture}
 \end{center}
 
-Again, the second closure in each environment is the same closure.  And again,
+Again, the second closure is identical in each environment.  And again,
 we can represent these environments with a shared environment, this time
 keeping call-by-need evaluation in mind:
 \begin{center}
@@ -78,28 +78,28 @@ and the cactus environment ($\mathcal{CE}$) machine.
 
 Curien's calculus of closures does not differentiate between flat and shared
 environment representations, and indeed, no calculus that we are aware of has
-had the need to. Therefore, we must derive our own calculus of closures, forcing
-the environment to be shared. Because we can hold the closure directly in the
+had the need to. Therefore, we must derive a calculus of closures, forcing the
+environment to be shared. Because we can hold the closure directly in the
 environment, we choose to replace the standard heap of closures with a
-\emph{heap of environments}. Because sharing is required, we extend Curien's
-calculus of closures to include our heap of environments, or what we will refer
+\emph{heap of environments}. To enforce sharing, we extend Curien's
+calculus of closures to include the heap of environments, which we refer
 to as a \emph{cactus environment}. 
 
 See Figure~\ref{fig:calccact} for the syntax and semantics of the cactus
 calculus. Recall that we are only concerned with evaluation of closed terms. The
 initial closed term $t$ is placed in a $(t[0],\epsilon[0=\bullet])$ tuple, and
 evaluation terminates on a value. We define two different semantics, one for
-call-by-name and one for call-by-need. This is to make the connection to
-Curien's call-by-name calculus more straightfoward, both for the reader and
-for the proof. The rule for application (MEval and NEval) is identical for
-both semantics: each evaluates the left hand side to a function, then binds
-the variable in the cactus environment, extending the current environment.
+call-by-name and one for call-by-need, which makes the connection to
+Curien's call-by-name calculus more straightfoward. The rule for application
+(MEval and NEval) is identical for both semantics: each evaluates the left hand
+side to a function, then binds the variable in the cactus environment, extending
+the current environment.
 The only difference between this semantics and Curien's is that if we need
 to extend an environment multiple times, the semantics \emph{requires}
-sharing said environment among the extensions. This makes no real
-difference for call-by-name, but it is needed for the sharing of results in the
-NVar rule. The explicit environment sharing ensures that the closure that is
-overwritten with a value is shared among instances of that variable. 
+sharing it among the extensions. This makes no real difference for call-by-name,
+but it is needed for the sharing of results in the NVar rule. The explicit
+environment sharing ensures that the closure that is overwritten with a value is
+shared correctly.
 
 \begin{figure*}
 \textbf{Syntax}
@@ -172,10 +172,10 @@ x.t_n \\ \langle \Psi, x' \mapsto t_m \rangle [x'/x]t_n \Downarrow \langle
 We start with a \emph{flattening} relation between a configuration for
 $\Downarrow$ and a configuration for $\xrightarrow{}_{N}$. The flattening
 relation relates the free deBruijn indices of the base term and each term in
-the heap with the final location of the referenced closure, up to pointer
+the heap to the final location of the referenced closure, up to pointer
 equivalence. Then each deBruijn-indexed term is related to all alpha equivalent
-standard terms. The relation only holds when both terms are closed under their
-corresponding heaps. As a result, it trivially holds for the special case of
+standard terms. The relation holds only when both terms are closed under their
+corresponding heaps. As a result, it holds trivially for the special case of
 initializing each configuration with a standard term and its corresponding
 deBruijn-indexed term, respectively. The proof is finished by induction on the
 step relation for each direction of the bisimulation.
@@ -184,5 +184,5 @@ step relation for each direction of the bisimulation.
 
 Correct sharing for recursive data values, as pointed out in
 \cite{ariola1995call}, is not possible without adding explicit recursion. We
-return to this issue in Section~\ref{sec:disc}, but at least mention here that
-adding explicit recursion to this scheme would make for interesting future work.
+return to this issue in Section~\ref{sec:disc}, but note here that adding
+explicit recursion to this scheme is left for future work.

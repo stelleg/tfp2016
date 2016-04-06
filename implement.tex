@@ -1,11 +1,11 @@
 \section{Implementation} \label{sec:impl}
 
 This section describes how the $\mathcal{CE}$ machine can be mapped directly to
-x64 insructions. Specifically, we re-define the three instructions as given by
+x64 insructions. Specifically, we re-define the three instructions given by
 the TIM~\cite{TIM}: \texttt{TAKE}, \texttt{ENTER}, and \texttt{PUSH}, and
 implement them with x64 assembly. We also describe several design decisions, as
 well as some optimizations. All implementation and benchmark code is available
-at \texttt{http://cs.unm.edu/\textasciitilde stelleg/cem-ifl2015.tar.gz}.
+at \texttt{http://cs.unm.edu/\textasciitilde stelleg/cem-tfp2016.tar.gz}.
 
 Each closure is represented as a code pointer, environment pointer tuple. The
 Context is implemented as a stack, with updates represented as a null pointer,
@@ -13,8 +13,7 @@ environment pointer tuple to differentiate them from closure arguments. The
 Heap, or cactus environment, is implemented as a heap of environments. 
 
 \subsection{Compilation}
-The three instructions are given below, with descriptions of their operational
-behaviour. 
+The three instructions are given below, with descriptions of their behavior. 
 
 \begin{itemize}
 \item \texttt{TAKE}: Pops a context item off the stack. If the item is an
@@ -31,13 +30,12 @@ These operations correspond directly to lambda terms, and to the transition
 functions of the $\mathcal{CE}$ machine. The mapping from lambda terms can be
 seen in Figure~\ref{fig:cemcompile}, which defines the compiler. Unlike the TIM,
 our version of \texttt{TAKE} doesn't have an arity; we compile a sequence of
-lambdas as a sequence of \texttt{TAKE} instructions. While we are not aware of a
-direct performance comparison between the approaches, we do not see any inherent
-reason that a number of inlined \texttt{TAKE} instructions should be slower than
-a \texttt{TAKE n} instruction.  Similarly, the \texttt{ENTER i} instruction can
-be implemented either as a loop or unrolled, depending on \texttt{i}, and more
-performance comparisons are needed to determine the trade off between code size
-and speed.
+lambdas as a sequence of \texttt{TAKE} instructions. While have not compared
+performance of the two approaches directly, we suspect that a \texttt{n} inlined
+\texttt{TAKE} instructions should be roughly as fast as a \texttt{TAKE n}
+instruction.  Similarly, the \texttt{ENTER i} instruction can be implemented
+either as a loop or unrolled, depending on \texttt{i}, and more performance
+comparisons are needed to determine the trade off between code size and speed.
 
 \begin{figure}
 \begin{align*} C[t \; t'] &= \texttt{PUSH}\;label_{C[t']}:C[t] \concat C[t'] \\
@@ -60,7 +58,7 @@ regardless of environment size}.
 
 \subsection{Machine Literals and Primitive Operations}
 
-Following Sestoft ~\cite{sestoft} we extend the $\mathcal{CE}$ machine to
+Following Sestoft~\cite{sestoft}, we extend the $\mathcal{CE}$ machine to
 include machine literals and primitive operations. Figure~\ref{fig:extsyntax}
 shows the parts of syntax and semantics that are new or modified. 
 
@@ -95,37 +93,35 @@ of these omissions.
 
 Data types are a common extension that we omit ~\cite{jonesstg,boquist1997grin}.
 We take the approach of Sestoft ~\cite{sestoft} that these can be efficiently
-implemented with pure lambda terms. Consider a list data type (in Haskell
-syntax): \texttt{data List a = Cons a (List a) | Nil}. This can be represented
-in pure lambda terms with $Cons = \lambda h.\lambda t.\lambda c.\lambda n.c \; h
-\; t$ and $Nil = \lambda c.\lambda n.n$. 
+implemented with pure lambda terms. For example, consider a list data type (in
+Haskell syntax): \texttt{data List a = Cons a (List a) | Nil}. This can be
+represented in pure lambda terms with $Cons = \lambda h.\lambda t.\lambda
+c.\lambda n.c \; h \; t$ and $Nil = \lambda c.\lambda n.n$. 
 
-Let bindings are another term commonly included in most functional language
+Let bindings are another term commonly included in functional language
 compilers, even in the internal representation ~\cite{boquist1997grin,jonesstg}.
 Non-recursive let is syntactic sugar for a lambda binding and application, and
-thus we treat it as such. This approach helps to ensure that we are capable of
-compiling arbitrary lambda terms, while some approaches require pre-processing
+we treat it as such. This approach helps ensure that we can of
+compile arbitrary lambda terms, while some approaches require pre-processing
 ~\cite{sestoft,TIM}.
 
-Recursive let bindings are another omission. Here we follow Rozas
-~\cite{rozas1992taming}: if it can be represented in pure lambda terms, it should
+Recursive let bindings are a third omission. Here we follow Rozas
+~\cite{rozas1992taming}: If it can be represented in pure lambda terms, it should
 be. Thus, we implement recursion using the standard Y combinator. In the case of
 mutual recursion, we use the Y combinator in conjunction with a tuple of the
 mutually recursive functions. Without the appropriate
-optimizations ~\cite{rozas1992taming}, this approach has a large overhead, as we
+optimizations ~\cite{rozas1992taming}, this approach has high overhead, as we
 discuss in Section~\ref{sec:res}.
 
-There is a common pattern in these omissions: if recursion, let bindings, data
-types, etc., can be represented with pure lambda calculus, then optimized to
-achieve equal performance to those that represent them explicitly, then do so.
-This allows opportunity for application of general purpose optimizations that
-may optimize data types, but also will optimize normal function applications
-that share some properties with data types.
+Our philosophy regarding extensions is: when an extension can be represented
+with pure lambda calculus, then optimized to achieve equal performance to
+implementations that represent them explicitly, then do so. This approach should
+allow more general optimizations.
 
 \subsection{Optimizations}
 
-The $\mathcal{CE}$ implementation described in the previous section is a
-completely unoptimized implementation. For example, there is no effort to
+The $\mathcal{CE}$ implementation described in the previous section is 
+completely unoptimized. For example, no effort is expended to
 discover global functions to avoid costly jumps to pointers in the heap
 ~\cite{jonesstg}. Indeed, every variable reference will look up the code pointer
 in the shared environment and jump to it. There is also no implementation of 
@@ -133,8 +129,8 @@ control flow analysis as used by Rozas to optimize away the Y combinator.  Thus,
 every recursive call exhibits the large overhead involved in re-calculating the
 fixed point of the function.  
 
-We do, however, implement a couple of basic optimizations, primarily to reduce
-the load on the heap:
+We do, however, implement two basic optimizations, primarily to reduce the load
+on the heap:
 
 \begin{itemize}
 \item \texttt{POP}: A \texttt{TAKE} instruction can be converted to a \texttt{POP}
@@ -150,15 +146,12 @@ stack. This shortcut prevents unnecessary writes to the stack and heap
 
 \subsection{Garbage Collection}
 
-We implement a simple mark and sweep garbage collector with the property
-that it does not require two spaces, due to the constant sized closures in the
-heap, allowing a linked list representation for the free cells.  Indeed,
+We have implemented a simple mark and sweep garbage collector with the property
+that it does not require two spaces, due to constant sized closures in the
+heap, allowing a linked list representation for the free cells. Indeed,
 while the abstract machine from Section~\ref{sec:mach} increments a free heap
 counter, the actual implementation uses the next free cell in the linked list.
 
 Because the focus of this paper is not on the performance of garbage collection,
 we ensure the benchmarks in Section~\ref{sec:eval} are not dominated by GC time.
-Still, there is a significant connection between closure representation and
-garbage collection ~\cite{appel1988optimizing}, and we discuss this further in
-Section~\ref{sec:disc}. 
 
