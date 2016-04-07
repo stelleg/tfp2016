@@ -16,8 +16,7 @@ the standard Barendregt syntax conventions, namely that applications are left
 associative and the bodies of abstractions extend as far as possible to the
 right ~\cite{barendregt1984lambda}.  A \emph{value} in lambda calculus refers to
 an abstraction. We are concerned only with evaluation to weak head normal form
-(WHNF), in which evaluation terminates on an abstraction without entering its
-body.
+(WHNF), which terminates on an abstraction without entering its body.
 
 In mechanical evaluation of expressions, it would be too inefficient to perform
 explicit substitution. To solve this, the standard approach uses closures
@@ -71,8 +70,7 @@ literature in detail.  Here we summarize the most relevant points.
 The best known machine for lazy evaluation is the Spineless Tagless
 G-Machine (STG machine), which underlies the Glasgow Haskell Compiler (GHC). 
 STG uses flat environments that can be allocated on the stack, the heap,
-or some combination ~\cite{jonesstg}. The STG machine is the
-most widely used lazy evaluation machine. 
+or some combination ~\cite{jonesstg}.  
 
 Two other influential lazy evaluation machines relevant to the $\mathcal{CE}$
 machine are the call-by-need Krivine machines

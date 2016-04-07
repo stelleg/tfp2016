@@ -141,8 +141,10 @@ shared correctly.
 
 \subsection{Correctness}
 
-Here we show that there is a strong bisimulation between $\rightarrow_{N}$ and
-Ariola et al.'s operational semantics, $\Downarrow$ (Figure~\ref{fig:cbn}). 
+Ariola et al. define the standard call-by-need semantics in
+~\cite{ariola1995call}. To show correctness, we show that there is a strong
+bisimulation between $\rightarrow_{N}$ and their operational
+semantics, $\Downarrow$ (Figure~\ref{fig:cbn}). 
 
 \begin{figure}
 \begin{align*}
@@ -170,15 +172,14 @@ x.t_n \\ \langle \Psi, x' \mapsto t_m \rangle [x'/x]t_n \Downarrow \langle
 {\theorem \textnormal{(Strong Bisimulation)} $$\xrightarrow{}_{N} \; \sim \;
 \Downarrow$$}
 We start with a \emph{flattening} relation between a configuration for
-$\Downarrow$ and a configuration for $\xrightarrow{}_{N}$. The flattening
-relation relates the free deBruijn indices of the base term and each term in
-the heap to the final location of the referenced closure, up to pointer
-equivalence. Then each deBruijn-indexed term is related to all alpha equivalent
-standard terms. The relation holds only when both terms are closed under their
-corresponding heaps. As a result, it holds trivially for the special case of
-initializing each configuration with a standard term and its corresponding
-deBruijn-indexed term, respectively. The proof is finished by induction on the
-step relation for each direction of the bisimulation.
+$\Downarrow$ and a configuration for $\xrightarrow{}_{N}$. The deBruijn indexed
+terms and the standard terms are both converted to terms that use deBruijn
+indices for local variables and direct heap locations for free variables, 
+locations for global variables. The flattening relation holds only when both
+terms are closed under their corresponding heaps. It holds trivially for the
+special case of initializing each configuration with a standard term and its
+corresponding deBruijn-indexed term, respectively. The proof is finished by
+induction on the step relation for each direction of the bisimulation.
 
 \subsection{Recursion}
 

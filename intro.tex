@@ -3,16 +3,16 @@
 Call-by-need evaluation is a formalization of the idea that work
 should be delayed until needed, and performed only once.  Existing
 implementations of call-by-need take care in \emph{packaging} a delayed
-computation, or \emph{thunk}, by building a closure with an array binding all
-free variables \cite{jonesstg,boquist1997grin}. The overhead induced by this
-operation is well known, and one reason existing implementations avoid thunks
-wherever possible \cite{johnsson1984efficient}. The key insight of our
-Cactus Environment ($\mathcal{CE}$) Machine is that this overhead can be
+computation, or \emph{thunk}, by building a closure with an array that contains
+the bindings of all free variables \cite{jonesstg,boquist1997grin}. The overhead
+induced by this operation is well known, and one reason existing implementations
+avoid thunks wherever possible \cite{johnsson1984efficient}. The key insight of
+our Cactus Environment ($\mathcal{CE}$) Machine is that this overhead can be
 minimized by only recording a location in a shared environment.
 
 As an example, consider the application $f \; e$. In existing call-by-need
 implementations, e.g., the STG machine\cite{jonesstg}, a closure with a flat
-environment will be constructed for $e$.  This has a time and memory cost
+environment will be constructed for $e$.  Doing so incurs a time and memory cost
 proportional to the number of free variables of $e$. \footnote{In some
 implementations, these are lambda lifted to be formal parameters, but the
 principle is the same.} We minimize this packaging cost by recording a
