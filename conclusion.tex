@@ -1,5 +1,11 @@
 \section{Conclusion} \label{sec:conc}
 
+Lazy evaluation has long suffered from high overhead of delayed computations. By
+carefully packaging these delayed computations, existing implementations pay an
+up-front cost to ensure efficient variable lookup if a delayed computation is
+entered. In this paper we have presented a novel approach that delays this cost,
+so that if a delayed computation isn't entered, it isn't as costly. 
+
 We would like the reader to take a few key points from this paper. First, a
 shared environment, explicitly represented as a cactus stack, is a natural
 way to share the results of computation as required by lazy evaluation. Second,
