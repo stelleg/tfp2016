@@ -1,21 +1,20 @@
 \section{Discussion and Related Work} \label{sec:disc}
 
-While we have presented some of the related work throughout the paper, we use
-this section to further address related work. We also discuss a number of
-possibilities for future work, motivated by current drawbacks and inspired by
-related work. 
+Some related work was discussed earlier to provide background and context. Here,
+we briefly and explicitly compare our approach to earlier work. We also discuss
+areas for future work.
 
 \subsection{Closure Representation}
-
 Appel and Shao \cite{shao1994space} and Appel and Jim \cite{appel1988optimizing}
-both cover the design space for closure representation, and develop a particular
-approach, called \emph{safely linked closures}. Their approach uses flat
-closures when there is no duplication, and links in a way that preserves
-liveness, to prevent violation of the \emph{safe for space complexity} (SSC)
-rule \cite{appel2006compiling}.
+both cover the design space for closure representation, and develop an approach
+called \emph{safely linked closures}. Their approach uses flat closures when
+there is no duplication, and links in a way that preserves liveness, to prevent
+violation of the \emph{safe for space complexity} (SSC) rule
+\cite{appel2006compiling}. While we don't address SSC or garbage collection in
+general, understanding the relationship between SSC and shared environment
+call-by-need is an interesting area for future work.
 
 \subsection{Eval/Apply vs. Push/Enter}
-
 Marlow and Peyton Jones describe two approaches to the implementation of
 function application: eval/apply, where the function is evaluated and then
 passed the necessary arguments, and push/enter, where the arguments are pushed
@@ -24,22 +23,22 @@ onto the stack and the function code is entered \cite{marlow2006making}.
 They conclude that despite push/enter being a standard approach to lazy
 machines, eval/apply performs better. While our current approach uses push
 enter, investigating whether or not eval/apply could be usefully implemented for
-a shared environment machine like the one presented here presents an interesting
-opportunity for future work.
+a shared environment machine like the CEM is an interesting avenue for
+future work.
 
 \subsection{Collapsed Markers}
 Friedman et al.\ show how a machine can be designed to prevent multiple adjacent
 update markers being pushed onto the stack \cite{lkm}.  This property is
-desirable because multiple adjacent update markers will all be updated with the
-same value. Furthermore, they give examples showing that in some cases, these
-redundant update markers can cause an otherwise constant-spaced stack to grow
-unbounded. To achieve what they call collapsed markers, they add a layer
+desirable because multiple adjacent update markers are always updated with the
+same value. They give examples showing that in some cases, these redundant
+update markers can cause an otherwise constant-spaced stack to grow unbounded.
+They implement an optimizations that collapses update markers by adding a layer
 of indirection between heap locations and closures. We propose a similar
 approach, but without the performance hit caused by an extra layer of
-indirection: upon a variable dereference, check if the top of the stack is an
-update. If it is, instead of pushing a redundant update marker onto the stack,
-replace the closure in the heap at the desired location with an update marker.
-Then, the variable dereference rule must have a check for an update marker upon
+indirection. Upon a variable dereference the CEM checks if the top of the stack
+is an update. If it is, instead of pushing a redundant update marker onto the
+stack, it replaces the closure in the heap at the desired location with an update
+marker.  Then, the variable dereference rule checks for an update marker upon
 dereference, and will update accordingly. We have begun to implement this
 optimization, but leave the full implementation and description for future work.
 
@@ -49,12 +48,11 @@ straightforward \cite{appel2006compiling,jonesstg,terei2010llvm}. It is less
 obvious how to do register allocation with the $\mathcal{CE}$ machine.
 We speculate that \emph{only strict free variables should be loaded into
 registers}. That is to say, the environment variables may not be used, and only
-the ones we are sure will be used should be loaded into registers: the rest
+the ones we know will be used should be loaded into registers and the rest
 should be loaded on demand.
 
 \subsection{Verification}
-One attractive property of this implementation is its simplicity. This property
-makes it an attractive target for a verified compiler. Because it avoids
-complexities required for flat environment implementations, e.g. black hole
-updates, basing a verified compiler on this machine is an exciting area for
-future work. 
+One attractive property of our implementation is its simplicity, which makes it
+an attractive target for a verified compiler. Because it avoids complexities
+required for flat environment implementations, e.g. black hole updates, basing a
+verified compiler on this machine is another exciting area for future work. 
