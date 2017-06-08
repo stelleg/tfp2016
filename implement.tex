@@ -35,7 +35,7 @@ performance of the two approaches directly, we suspect that a \texttt{n} inlined
 \texttt{TAKE} instructions should be roughly as fast as a \texttt{TAKE n}
 instruction.  Similarly, the \texttt{ENTER i} instruction can be implemented
 either as a loop or unrolled, depending on \texttt{i}, and more performance
-comparisons are needed to determine the trade off between code size and speed.
+comparisons are needed to determine the trade-off between code size and speed.
 
 \begin{figure}
 \begin{align*} C[t \; t'] &= \texttt{PUSH}\;label_{C[t']}:C[t] \concat C[t'] \\
@@ -65,11 +65,10 @@ shows the parts of syntax and semantics that are new or modified.
 \begin{figure}
 \textbf{Syntax}
 \begin{align*}
-\tag{Term}    t &::= i \; | \; \lambda t \; | \; t \; t | \; m \\
-\tag{Machine} m &::= n \; | \; op \\
+\tag{Term}    t &::= i \; | \; \lambda t \; | \; t \; t | \; n \; | \; op \\
 \tag{Integer} n &\in \mathbb{I} \\
 \tag{PrimOp} op &::= + \; | \; - \; | \; * \; | \; \; / \;\; | \; = \; | \; > \; | \; < \\
-\tag{Value} v &::= \lambda t[l] \; | \; m[l] \\
+\tag{Value} v &::= \lambda t[l] \; | \; n[l] \\
 \end{align*}
 \textbf{Integer and Primop Semantics}
 \begin{align*}

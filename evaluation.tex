@@ -1,33 +1,31 @@
 \section{Performance Evaluation} \label{sec:eval}
 
-This section describes experiments that assess the strengths and weaknesses of
+This section reports experiments that assess the strengths and weaknesses of
 the $\mathcal{CE}$ machine. We evaluate using benchmarks from the \texttt{nofib}
 benchmark suite. Because we have implemented only machine integers, and must
 translate the examples by hand, we use a subset of the \texttt{nofib} suite that
-and exclude floating point values or arrays. A list of the benchmarks used and a
+excludes floating point values and arrays. A list of the benchmarks used and a
 brief description is given in Figure~\ref{fig:bench}.
 
 \begin{figure}
 \begin{itemize}
-\item \textbf{exp3:} A Peano arithmetic benchmark. It computes $3^8$ in
-Peano arithmetic, and prints the result. 
+\item \textbf{exp3:} A Peano arithmetic benchmark. Computes $3^8$ and prints the result. 
 \item \textbf{queens:} Computes the number of solutions to the nqueens problem
 for an n by n board.
 \item \textbf{primes:} A simple primes sieve that computes the nth prime.
-\item \textbf{digits-of-e1:} A calculation of the digits of $e$ using continued
-fractions. Computes the first n digits of $e$.
-\item \textbf{digits-of-e2:} Another calculation of the digits of $e$ using an
-infinite series. Computes the first n digits of $e$. 
+\item \textbf{digits-of-e1:} A calculation of the first $n$ digits of $e$ using
+continued fractions. 
+\item \textbf{digits-of-e2:} Another calculation of the first $n$ digits of $e$ using an
+infinite series.  
 \item \textbf{fib:} Naively computes the nth Fibonacci number.
-\item \textbf{fannkuch:} A counting benchmark counting the number of reverses of
-a subset of a list.
+\item \textbf{fannkuch:} Counts the number of reverses of a subset of a list.
 \item \textbf{tak:} A synthetic benchmark involving basic recursion.
 \end{itemize}
 \caption{Description of Benchmarks}
 \label{fig:bench}
 \end{figure}
 
-We compare the $\mathcal{CE}$ machine to two existing implementations:
+We compare the $\mathcal{CE}$ machine with two existing implementations:
 
 \begin{itemize}
 \item GHC: The Glasgow Haskell compiler. A high performance, optimizing compiler

@@ -1,16 +1,16 @@
 \section{Discussion and Related Work} \label{sec:disc}
 
 Some related work was discussed earlier to provide background and context. Here,
-we briefly and explicitly compare our approach to earlier work. We also discuss
+we briefly and explicitly compare our approach with earlier work. We also discuss
 areas for future work.
 
 \subsection{Closure Representation}
 Appel and Shao \cite{shao1994space} and Appel and Jim \cite{appel1988optimizing}
 both cover the design space for closure representation, and develop an approach
-called \emph{safely linked closures}. Their approach uses flat closures when
+called \emph{safely linked closures}. It uses flat closures when
 there is no duplication, and links in a way that preserves liveness, to prevent
 violation of the \emph{safe for space complexity} (SSC) rule
-\cite{appel2006compiling}. While we don't address SSC or garbage collection in
+\cite{appel1992compiling}. While we do not address SSC or garbage collection in
 general, understanding the relationship between SSC and shared environment
 call-by-need is an interesting area for future work.
 
@@ -21,9 +21,9 @@ passed the necessary arguments, and push/enter, where the arguments are pushed
 onto the stack and the function code is entered \cite{marlow2006making}.
 
 They conclude that despite push/enter being a standard approach to lazy
-machines, eval/apply performs better. While our current approach uses push
-enter, investigating whether or not eval/apply could be usefully implemented for
-a shared environment machine like the CEM is an interesting avenue for
+machines, eval/apply performs better. While our current approach uses
+push/enter, investigating whether eval/apply could be usefully implemented for a
+shared environment machine like the CEM is an interesting avenue for
 future work.
 
 \subsection{Collapsed Markers}
@@ -32,7 +32,7 @@ update markers being pushed onto the stack \cite{lkm}.  This property is
 desirable because multiple adjacent update markers are always updated with the
 same value. They give examples showing that in some cases, these redundant
 update markers can cause an otherwise constant-spaced stack to grow unbounded.
-They implement an optimizations that collapses update markers by adding a layer
+They implement an optimization that collapses update markers by adding a layer
 of indirection between heap locations and closures. We propose a similar
 approach, but without the performance hit caused by an extra layer of
 indirection. Upon a variable dereference the CEM checks if the top of the stack
@@ -44,7 +44,7 @@ optimization, but leave the full implementation and description for future work.
 
 \subsection{Register Allocation} \label{sec:alloc}
 One advantage of flat environments is that register allocation is
-straightforward \cite{appel2006compiling,jonesstg,terei2010llvm}. It is less
+straightforward \cite{appel1992compiling,jonesstg,terei2010llvm}. It is less
 obvious how to do register allocation with the $\mathcal{CE}$ machine.
 We speculate that \emph{only strict free variables should be loaded into
 registers}. That is to say, the environment variables may not be used, and only
@@ -52,7 +52,7 @@ the ones we know will be used should be loaded into registers and the rest
 should be loaded on demand.
 
 \subsection{Verification}
-One attractive property of our implementation is its simplicity, which makes it
-an attractive target for a verified compiler. Because it avoids complexities
-required for flat environment implementations, e.g. black hole updates, basing a
-verified compiler on this machine is another exciting area for future work. 
+A signal property of our implementation is its simplicity, which makes it an
+attractive target for a verified compiler. Because it avoids complexities
+required for flat environment implementations, e.g., black hole updates, basing
+a verified compiler on this machine is another exciting area for future work. 

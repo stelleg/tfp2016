@@ -82,18 +82,22 @@ had the need to. Therefore, we must derive a calculus of closures, forcing the
 environment to be shared. Because we can hold the closure directly in the
 environment, we choose to replace the standard heap of closures with a
 \emph{heap of environments}. To enforce sharing, we extend Curien's
-calculus of closures to include the heap of environments, which we refer
-to as a \emph{cactus environment}. 
+calculus of closures to explicity include the heap of environments, which we
+refer to as a \emph{cactus environment}. 
 
 See Figure~\ref{fig:calccact} for the syntax and semantics of the cactus
 calculus. Recall that we are only concerned with evaluation of closed terms. The
-initial closed term $t$ is placed in a $(t[0],\epsilon[0=\bullet])$ tuple, and
-evaluation terminates on a value. We define two different semantics, one for
+initial closed term $t$ is placed in a $(t[0],\epsilon[0 \mapsto \bullet])$ tuple, and
+evaluation terminates on a value. We use the shorthand $\mu(l,i)=l' \mapsto l''
+c \dot e$ to say that looking up the $i$'th element in the linked environment
+structure starting at $l$ results in location $l'$, where closure $c$ and
+continuing environment $e$ reside. We define two different semantics, one for
 call-by-name and one for call-by-need, which makes the connection to
 Curien's call-by-name calculus more straightfoward. The rule for application
 (MEval and NEval) is identical for both semantics: each evaluates the left hand
 side to a function, then binds the variable in the cactus environment, extending
 the current environment.
+
 The only difference between this semantics and Curien's is that if we need
 to extend an environment multiple times, the semantics \emph{requires}
 sharing it among the extensions. This makes no real difference for call-by-name,
@@ -116,7 +120,7 @@ shared correctly.
 \textbf{Call-by-Name Semantics}
 \begin{align*}
 \tag{MEval} \inference
-{(t[l], \mu) \rightarrow_{M} (\lambda t_2[l'], \mu') \quad f \not \in \textnormal{dom}(\mu')}
+{(t[l], \mu) \xrightarrow{* }_{M} (\lambda t_2[l'], \mu') \quad f \not \in \textnormal{dom}(\mu')}
 {(t \; t_3[l], \mu) \rightarrow_{M} (t_2[f], \mu'[f \mapsto t_3[l] \cdot l'])}  
 \end{align*}
 \begin{align*}
@@ -174,12 +178,12 @@ x.t_n \\ \langle \Psi, x' \mapsto t_m \rangle [x'/x]t_n \Downarrow \langle
 We start with a \emph{flattening} relation between a configuration for
 $\Downarrow$ and a configuration for $\xrightarrow{}_{N}$. The deBruijn indexed
 terms and the standard terms are both converted to terms that use deBruijn
-indices for local variables and direct heap locations for free variables, 
-locations for global variables. The flattening relation holds only when both
-terms are closed under their corresponding heaps. It holds trivially for the
-special case of initializing each configuration with a standard term and its
-corresponding deBruijn-indexed term, respectively. The proof is finished by
-induction on the step relation for each direction of the bisimulation.
+indices for local variables and direct heap locations for free variables. The
+flattening relation holds only when both terms are closed under their
+corresponding heaps. It holds trivially for the special case of initializing
+each configuration with a standard term and its corresponding deBruijn-indexed
+term, respectively. The proof is finished by induction on the step relation for
+each direction of the bisimulation.
 
 \subsection{Recursion}
 
