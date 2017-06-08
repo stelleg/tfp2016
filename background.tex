@@ -1,6 +1,6 @@
 \section{Background and Motivation} \label{sec:back}
 
-This section provides relevant background for the $\mathcal{CE}$ machine,
+This section provides relevant background for the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine,
 outlining lambda calculus, evaluation strategies, and Curien's calculus of
 closures.
 
@@ -32,6 +32,27 @@ replacing the deBruijn indices with variables for readability, in which case
 variables are looked up in the environment instead of indexed, e.g., $t[x = c, y
 = c'])$ ~\cite{barendregt1984lambda}. We also add superscript and subscript
 markers to denote unique syntax elements, e.g., $t', t_1 \in \textnormal{Term}$. 
+
+\begin{figure}
+\textbf{Syntax}
+\begin{align*}
+\tag{Term} t &::= i \; | \; \lambda t \; | \; t \; t  \\
+\tag{Variable} i &\in \mathbb{N}  \\
+\tag{Closure} c &::= t [\rho] \\
+\tag{Environment} \rho &::= \bullet \; | \; c \cdot \rho \\
+\end{align*}
+\textbf{Semantics}
+\begin{align*}
+\tag{LEval}\inference
+{t_1[\rho] {\xrightarrow{* }}_L \lambda t_2[\rho'] }
+{t_1 t_3[\rho] \rightarrow_L t_2[t_3[\rho] \cdot \rho'] } 
+\end{align*}
+\begin{align*}
+\tag{LVar} i [c_0 \cdot c_1 \cdot ... c_i \cdot \rho] \rightarrow_L c_i
+\end{align*}
+\caption{Curien's call-by-name calculus of closures ~\cite{curien1991abstract}}
+\label{fig:calcclos}
+\end{figure}
 
 \subsection{Evaluation Strategies} \label{sec:eval}
 
@@ -72,18 +93,18 @@ G-Machine (STG machine), which underlies the Glasgow Haskell Compiler (GHC).
 STG uses flat environments that can be allocated on the stack, the heap,
 or some combination ~\cite{jonesstg}.  
 
-Two other influential lazy evaluation machines relevant to the $\mathcal{CE}$
+Two other influential lazy evaluation machines relevant to the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$
 machine are the call-by-need Krivine machines
 ~\cite{lkm,krivine2007call,sestoft}, and the three-instruction machine (TIM)
 ~\cite{TIM}.  Krivine machines started as an approach to call-by-name
 evaluation, and were later extended to call-by-need
-~\cite{krivine2007call,sestoft,danvy2013synthetic,lkm}.  The $\mathcal{CE}$
+~\cite{krivine2007call,sestoft,danvy2013synthetic,lkm}.  The $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$
 modifies the lazy Krivine machine to capture the environment sharing given by
 the cactus environment. The TIM is an implementation of call-by-need and
 call-by-name ~\cite{TIM}.  It involves, as the name suggests, three machine
 instructions, \texttt{TAKE}, \texttt{PUSH}, and \texttt{ENTER}. In
 Section~\ref{sec:impl}, we follow Sestoft ~\cite{sestoft} and
-re-appropriate these instructions for the $\mathcal{CE}$ machine.
+re-appropriate these instructions for the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine.
 
 There has also been recent interest in \emph{heapless} abstract
 machines for lazy evaluation. Danvy et al. ~\cite{danvy2012inter} and

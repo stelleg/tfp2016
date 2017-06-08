@@ -15,27 +15,6 @@ section that by removing ambiguity about how the environments are represented,
 and forcing them to be represented in a \emph{cactus stack}
 ~\cite{stenstrom1988vlsi}, we can define our novel call-by-need calculus.
 
-\begin{figure}
-\textbf{Syntax}
-\begin{align*}
-\tag{Term} t &::= i \; | \; \lambda t \; | \; t \; t  \\
-\tag{Variable} i &\in \mathbb{N}  \\
-\tag{Closure} c &::= t [\rho] \\
-\tag{Environment} \rho &::= \bullet \; | \; c \cdot \rho \\
-\end{align*}
-\textbf{Semantics}
-\begin{align*}
-\tag{LEval}\inference
-{t_1[\rho] {\xrightarrow{* }}_L \lambda t_2[\rho'] }
-{t_1 t_3[\rho] \rightarrow_L t_2[t_3[\rho] \cdot \rho'] } 
-\end{align*}
-\begin{align*}
-\tag{LVar} i [c_0 \cdot c_1 \cdot ... c_i \cdot \rho] \rightarrow_L c_i
-\end{align*}
-\caption{Curien's call-by-name calculus of closures ~\cite{curien1991abstract}}
-\label{fig:calcclos}
-\end{figure}
-
 To start, consider again the example from Section~\ref{sec:env}, this
 time with deBruijn indices: $(\lambda(\lambda t) \; (\lambda t_1)) t_2$.  The
 terms $t$ and $t_1$, when evaluated in the closure calculus, would have the
@@ -74,7 +53,7 @@ in place with the value after its first reference, then both environments would
 contain the resulting value. This is exactly the kind of sharing that is
 required by call-by-need, and thus we can use this structure to build a
 call-by-need evaluator. This is the essence of the cactus environment calculus
-and the cactus environment ($\mathcal{CE}$) machine. 
+and the cactus environment ($\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$) machine. 
 
 Curien's calculus of closures does not differentiate between flat and shared
 environment representations, and indeed, no calculus that we are aware of has
@@ -148,9 +127,12 @@ shared correctly.
 Ariola et al. define the standard call-by-need semantics in
 ~\cite{ariola1995call}. To show correctness, we show that there is a strong
 bisimulation between $\rightarrow_{N}$ and their operational
-semantics, $\Downarrow$ (Figure~\ref{fig:cbn}). 
+semantics, $\Downarrow$ (Figure~\ref{fig:cbn}).  
 
 \begin{figure}
+\begin{align*}
+\tag{Heap} \Phi, \Psi, \Upsilon &::= x_1 \mapsto t_1, \dots, x_n \mapsto t_n
+\end{align*}
 \begin{align*}
 \tag{Id} \inference
 {\langle \Phi \rangle t \Downarrow \langle \Psi \rangle \lambda x.t'}
@@ -182,12 +164,6 @@ indices for local variables and direct heap locations for free variables. The
 flattening relation holds only when both terms are closed under their
 corresponding heaps. It holds trivially for the special case of initializing
 each configuration with a standard term and its corresponding deBruijn-indexed
-term, respectively. The proof is finished by induction on the step relation for
+term, respectively. The proof proceeds by induction on the step relation for
 each direction of the bisimulation.
 
-\subsection{Recursion}
-
-Correct sharing for recursive data values, as pointed out in
-\cite{ariola1995call}, is not possible without adding explicit recursion. We
-return to this issue in Section~\ref{sec:disc}, but note here that adding
-explicit recursion to this scheme is left for future work.

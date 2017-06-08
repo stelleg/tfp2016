@@ -7,7 +7,7 @@ computation, or \emph{thunk}, by building a closure with an array that contains
 the bindings of all free variables \cite{jonesstg,boquist1997grin}. The overhead
 induced by this operation is well known, and one reason existing implementations
 avoid thunks wherever possible \cite{johnsson1984efficient}. The key insight of
-our Cactus Environment ($\mathcal{CE}$) Machine is that this overhead can be
+our Cactus Environment ($\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$) Machine is that this overhead can be
 minimized by only recording a location in a shared environment.
 
 As an example, consider the application $f \; e$. In existing call-by-need
@@ -40,9 +40,9 @@ with lazy evaluation.  We then provide some intuition for why this combination
 is desirable, and formalize the connection between call-by-need evaluation and
 shared environments in a calculus (Section~\ref{sec:calc}).
 Section~\ref{sec:mach} uses the calculus to derive a novel abstract machine, the
-$\mathcal{CE}$ machine, explains how $\mathcal{CE}$ uses the shared environment
+$\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine, explains how $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ uses the shared environment
 in a natural way to implement lazy evaluation, and gives its formal semantics.
-We then describe a straightforward implementation of $\mathcal{CE}$ in
+We then describe a straightforward implementation of $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ in
 Section~\ref{sec:impl}, extended with machine literals and primitive operations,
 compiling directly to native code. We evaluate the implementation in
 Section~\ref{sec:eval}, showing that it is capable of performing comparably to
