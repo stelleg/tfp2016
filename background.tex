@@ -9,7 +9,7 @@ closures.
 We begin with the simple lambda calculus ~\cite{barendregt1984lambda}:  $$ t::= x
 \; | \;  \lambda x.t \; | \;  t \; t $$ where $x$ is a variable, $\lambda x.t$
 is an abstraction, and $t \; t$ is an application. We also use lambda calculus
-with deBruijn indices, which replace variables with a natural number indexing
+with deBruijn indices, which replaces variables with a natural number indexing
 into the binding lambdas.  This calculus is given by the syntax: $$ t::= i \; |
 \; \lambda t \; | \; t \; t $$ where $i \in \mathbb{N}$. In both cases, we use
 the standard Barendregt syntax conventions, namely that applications are left
@@ -21,11 +21,11 @@ an abstraction. We are concerned only with evaluation to weak head normal form
 In mechanical evaluation of expressions, it would be too inefficient to perform
 explicit substitution. To solve this, the standard approach uses closures
 ~\cite{landin1964mechanical,curien1991abstract,jonesstg,biernacka2007concrete}.
-Closures combine a term with an environment, which binds the free variables in
+Closures combine a term with an environment, which binds the free variables of
 the term to closures. 
 
-For a formal basis for closures, we use Curien's calculus of
-closures~\cite{curien1991abstract}, given in Figure~\ref{fig:calcclos}.  It is a
+As the formal basis for closures we use Curien's calculus of
+closures~\cite{curien1991abstract}, Figure~\ref{fig:calcclos}.  It is a
 formalization of closures with an environment represented as a list of closures,
 indexed by deBruijn indices. We will occasionally modify this calculus by
 replacing the deBruijn indices with variables for readability, in which case
@@ -60,22 +60,25 @@ There are three standard evaluation strategies for lambda calculus:
 call-by-value, call-by-need, and call-by-name.  Call-by-value evaluates every argument
 to a value, whereas call-by-need and call-by-name only evaluate an argument if
 it is needed.  If an argument is needed more than once, call-by-name re-computes
-the value, where call-by-need memoizes the value, so it is computed at most once.
+the value, whereas call-by-need memoizes the value, so it is computed at most once.
 Thus, call-by-need attempts to embody the best of both worlds---never repeat
 work (call-by-value), and never perform unnecessary work (call-by-name). These
-are intuitively \emph{good} properties to have, and we illustrate the
+are intuitively good properties to have, and we illustrate the
 correctness of such an intuition with the following example, modified from
 ~\cite{danvy2013synthetic}:
 
-$$ \overbrace{c_m (c_m (\cdots(c_m}^{m} \; id \; \overbrace{id)\cdots) id)}^{m} \; true \; id
-\; bottom $$ where $c_n = \lambda s.\lambda z.\overbrace{s \; (s \cdots (s}^{n}
-\; z) \cdots) $, $true = \lambda t.\lambda f.t$, $id=\lambda x.x$, and $bottom =
-(\lambda x.x \; x) \lambda x.x \; x$. Call-by-value never terminates,
+
+$$ \overbrace{c_m (c_m (\cdots(c_m}^{m} \; \mathit{id} \;
+\overbrace{\mathit{id})\cdots) \mathit{id})}^{m} \; \mathit{true} \;
+\mathit{id} \; \mathit{bottom} $$ where $c_n = \lambda s.\lambda z.\overbrace{s
+\; (s \cdots (s}^{n} \; z) \cdots) $, $\mathit{true} = \lambda t.\lambda f.t$,
+$\mathit{id}=\lambda x.x$, and $\mathit{bottom} = (\lambda x.x \; x) \lambda x.x \; x$.
+Call-by-value never terminates,
 call-by-name takes exponential time, and call-by-need takes only polynomial time
 ~\cite{danvy2013synthetic}. Of course, this is a contrived example, but it
 illustrates desirable properties of call-by-need.
 
-In practice, however there are significant issues with call-by-need evaluation.
+In practice, however, there are significant issues with call-by-need evaluation.
 We focus on the following: \emph{Delaying a computation is slower than
 performing it immediately.} This issue is well known
 \cite{johnsson1984efficient,jonesstg}, and has become part of the motivation

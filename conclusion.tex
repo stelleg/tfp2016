@@ -2,7 +2,7 @@
 
 Lazy evaluation has long suffered from high overhead when delaying computations.
 While strictness analysis helps to alleviate this issue, there are and there
-allways will be cases it cannot catch. Existing implementations choose to pay an
+always will be cases it cannot catch. Existing implementations choose to pay an
 up-front cost of constructing a flat environment to ensure efficient variable
 lookup if a delayed computation is used. When a delayed computation is never
 used, this overhead is wasted. In this paper we have presented a novel approach

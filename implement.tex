@@ -1,23 +1,26 @@
 \section{Implementation} \label{sec:impl}
 
-This section describes how the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine can be mapped directly to
-x64 insructions. Specifically, we re-define the three instructions given by
-the TIM~\cite{TIM}: \texttt{TAKE}, \texttt{ENTER}, and \texttt{PUSH}, and
-implement them with x64 assembly. We also describe several design decisions, as
-well as some optimizations. All implementation and benchmark code is available
-at \texttt{http://cs.unm.edu/\textasciitilde stelleg/cem-tfp2016.tar.gz}.
+This section describes how the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$
+machine can be mapped directly to x64 insructions. Specifically, we re-define
+the three instructions given by the TIM~\cite{TIM}: \texttt{TAKE},
+\texttt{ENTER}, and \texttt{PUSH}, and implement them with x64 assembly. We
+also describe several design decisions, as well as some optimizations. All
+implementation and benchmark code is available at
+\texttt{http://cs.unm.edu/\textasciitilde stelleg/cem-tfp2016.tar.gz}.
 
-Each closure is represented as a code pointer, environment pointer tuple. The
-Context is implemented as a stack, with updates represented as a null pointer,
-environment pointer tuple to differentiate them from closure arguments. The
-Heap, or cactus environment, is implemented as a heap of environments. 
+Each closure is represented as a <code pointer, environment pointer> tuple. The
+Context is implemented as a stack, with updates represented as a <null pointer,
+environment pointer> tuple to differentiate them from closure arguments. The
+Heap, or cactus environment, is implemented as a heap containing <closure,
+environment pointer> structs. As a result, each cell in the heap takes 3
+machine words.
 
 \subsection{Compilation}
 The three instructions are given below, with descriptions of their behavior. 
 
 \begin{itemize}
 \item \texttt{TAKE}: Pops a context item off the stack. If the item is an
-update $u:=$, the instruction updates the location $u$ with the current closure.
+update $u$, the instruction updates the location $u$ with the current closure.
 If it is an argument $c$, the instruction binds the closure $c$ to the fresh
 location in the cactus environment.
 \item \texttt{ENTER i}: Enters the closure defined by variable index \texttt{i},
@@ -26,21 +29,24 @@ the current environment pointer, and the current cactus environment.  \item
 current environment pointer. 
 \end{itemize}
 
-These operations correspond directly to lambda terms, and to the transition
-functions of the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine. The mapping from lambda terms can be
-seen in Figure~\ref{fig:cemcompile}, which defines the compiler. Unlike the TIM,
-our version of \texttt{TAKE} doesn't have an arity; we compile a sequence of
-lambdas as a sequence of \texttt{TAKE} instructions. While have not compared
-performance of the two approaches directly, we suspect that a \texttt{n} inlined
-\texttt{TAKE} instructions should be roughly as fast as a \texttt{TAKE n}
-instruction.  Similarly, the \texttt{ENTER i} instruction can be implemented
+Each of these instructions corresponds directly to a corresponding lambda term:
+abstraction compiles to \texttt{TAKE}, application to \texttt{PUSH}, and
+variables to \texttt{ENTER}. Each is compiled using a direct implementation of
+the transition functions of the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$
+machine. The mapping from lambda terms can be seen in
+Figure~\ref{fig:cemcompile}, which defines the compiler. Unlike the TIM, our
+version of \texttt{TAKE} doesn't have an arity; we compile a sequence of
+lambdas as a sequence of \texttt{TAKE} instructions.  While we have not
+compared performance of the two approaches directly, we suspect that \texttt{n}
+inlined \texttt{TAKE} instructions should be roughly as fast as a \texttt{TAKE
+n} instruction.  Similarly, the \texttt{ENTER i} instruction can be implemented
 either as a loop or unrolled, depending on \texttt{i}, and more performance
 comparisons are needed to determine the trade-off between code size and speed.
 
 \begin{figure}
-\begin{align*} C[t \; t'] &= \texttt{PUSH}\;label_{C[t']}:C[t] \concat C[t'] \\
-C[\lambda.t] &= \texttt{TAKE}:C[t] \\
-C[i] &= \texttt{ENTER} \; i
+\begin{align*} C[\![t \; t']\!] &= \texttt{PUSH}\;label_{C[\![t']\!]}:C[\![t]\!] \concat C[\![t']\!] \\
+C[\![\lambda t]\!] &= \texttt{TAKE}:C[\![t]\!] \\
+C[\![i]\!] &= \texttt{ENTER} \; i
 \end{align*}
 \caption{$\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine compilation scheme. $C$ compiles a sequence of
 instructions from a term. The $label$ represents a code label: each instruction
@@ -56,7 +62,7 @@ the code pointer and one for the environment pointer). This is actually an
 important point: \emph{thunk creation is only two hardware instructions,
 regardless of environment size}.  
 
-\subsection{Machine Literals and Primitive Operations}
+\section{Machine Literals and Primitive Operations}
 
 Following Sestoft~\cite{sestoft}, we extend the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$ machine to
 include machine literals and primitive operations. Figure~\ref{fig:extsyntax}

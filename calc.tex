@@ -66,16 +66,21 @@ refer to as a \emph{cactus environment}.
 
 See Figure~\ref{fig:calccact} for the syntax and semantics of the cactus
 calculus. Recall that we are only concerned with evaluation of closed terms. The
-initial closed term $t$ is placed in a $(t[0],\epsilon[0 \mapsto \bullet])$ tuple, and
-evaluation terminates on a value. We use the shorthand $\mu(l,i)=l' \mapsto l''
-c \dot e$ to say that looking up the $i$'th element in the linked environment
+initial closed term $t$ is placed in a $(t[0],\epsilon[0 \mapsto \bullet])$
+tuple, and evaluation terminates on a value. We use some shorthand to make heap
+notation more palatable, for both the big-step semantics presented here and the
+small step semantics presented in the next section. $\mu(l,i)=l' \mapsto c
+\cdot l''$ denotes that looking up the $i$'th element in the linked environment
 structure starting at $l$ results in location $l'$, where closure $c$ and
-continuing environment $e$ reside. We define two different semantics, one for
-call-by-name and one for call-by-need, which makes the connection to
-Curien's call-by-name calculus more straightfoward. The rule for application
-(MEval and NEval) is identical for both semantics: each evaluates the left hand
-side to a function, then binds the variable in the cactus environment, extending
-the current environment.
+continuing environment $l''$ reside. $\mu(l) = c \cdot l'$ is the statement
+that $l \mapsto c \cdot l' \in \mu$. $\mu(u \mapsto c \cdot l')$ is $\mu$ with
+location $u$ updated to map to $c \cdot e$. $\textnormal{dom}(\mu)$ denotes the
+domain of the heap $\mu$. We define two different semantics, one for call-by-name and
+one for call-by-need, which makes the connection to Curien's call-by-name
+calculus more straightfoward. The rule for application (MEval and NEval) is
+identical for both semantics: each evaluates the left hand side to a function,
+then binds the variable in the cactus environment, extending the current
+environment.
 
 The only difference between this semantics and Curien's is that if we need
 to extend an environment multiple times, the semantics \emph{requires}
@@ -116,7 +121,7 @@ shared correctly.
 \begin{align*}
 \tag{NVar} \inference
 {\mu(l, i) = l' \mapsto c \cdot l'' \quad (c, \mu) \xrightarrow{* }_{N} (v, \mu')}
-{(i[l],\mu) \rightarrow_N (v, \mu'[l' \mapsto v \cdot l''])}
+{(i[l],\mu) \rightarrow_N (v, \mu'(l' \mapsto v \cdot l''))}
 \end{align*}
 \caption{Cactus calculus syntax and semantics.}
 \label{fig:calccact}

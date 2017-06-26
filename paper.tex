@@ -36,6 +36,7 @@
 \email{slolivi@sandia.gov}}
 
 \maketitle
+\setcounter{footnote}{0}
 
 \begin{abstract}
 Existing machines for lazy evaluation use a \emph{flat} representation of
@@ -46,10 +47,10 @@ approach that uses a \emph{shared} environment to minimize the overhead of
 delayed computations. We show how a shared environment can act as both an
 environment and a mechanism for sharing results. To formalize this approach, we
 introduce a calculus that makes the shared environment explicit, as well as
-a machine to implement the calculus, the \emph{Cactus Environment Machine}
-. A simple compiler implements the machine and is used to run experiments for
+a machine to implement the calculus, the \emph{Cactus Environment Machine}. A
+simple compiler implements the machine and is used to run experiments for
 assessing performance. The results show reasonable performance and suggest that
-incorporating this approach into real world compilers could give performance
+incorporating this approach into real-world compilers could yield performance
 benefits in some scenarios.
 \end{abstract}
 

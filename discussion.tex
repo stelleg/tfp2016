@@ -20,20 +20,19 @@ structure with flat.
 Marlow and Peyton Jones describe two approaches to the implementation of
 function application: eval/apply, where the function is evaluated and then
 passed the necessary arguments, and push/enter, where the arguments are pushed
-onto the stack and the function code is entered \cite{marlow2006making}.
-
-They conclude that despite push/enter being a standard approach to lazy
-machines, eval/apply performs better. While our current approach uses
-push/enter, investigating whether eval/apply could be usefully implemented for a
-shared environment machine like the $\mathcal{\mathcal{C} \mskip -4mu
-\mathcal{E}}$ machine is an interesting avenue for future work.
+onto the stack and the function code is entered \cite{marlow2006making}. They
+conclude that despite push/enter being a standard approach to lazy machines,
+eval/apply performs better. While our current approach uses push/enter,
+investigating whether eval/apply could be usefully implemented for a shared
+environment machine like the $\mathcal{\mathcal{C} \mskip -4mu \mathcal{E}}$
+machine is an interesting avenue for future work.
 
 \subsection{Collapsed Markers}
 Friedman et al.\ show how a machine can be designed to prevent multiple adjacent
 update markers being pushed onto the stack \cite{lkm}.  This property is
 desirable because multiple adjacent update markers are always updated with the
 same value. They give examples showing that in some cases, these redundant
-update markers can cause an otherwise constant-spaced stack to grow unbounded.
+update markers can cause an otherwise constant-space stack to grow unbounded.
 They implement an optimization that collapses update markers by adding a layer
 of indirection between heap locations and closures. We propose a similar
 approach, but without the performance hit caused by an extra layer of
